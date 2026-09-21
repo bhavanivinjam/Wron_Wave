@@ -1,0 +1,20 @@
+{
+  "name": "wron-wave-clothing-ecommerce",
+  "version": "1.0.0",
+  "description": "Full-stack E-Commerce store for WRON_WAVE CLOTHING",
+  "scripts": {
+    "start": "node server/index.js",
+    "dev:server": "cd server && npm run dev",
+    "dev:client": "cd client && npm run dev",
+    "build": "cd client && npm run build"
+  },
+  "keywords": [
+    "ecommerce",
+    "streetwear",
+    "wron-wave",
+    "clothing"
+  ],
+  "author": "WRON_WAVE",
+  "license": "MIT"
+}
+

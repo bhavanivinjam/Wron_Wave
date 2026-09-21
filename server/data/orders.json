@@ -1,0 +1,29 @@
+[
+  {
+    "id": "ORD-1001",
+    "customer": {
+      "name": "Arjun Kumar",
+      "phone": "+91 9876543210",
+      "address": "Banjara Hills, Road No. 12, Hyderabad",
+      "pincode": "500034"
+    },
+    "items": [
+      {
+        "id": "ww-pt-01",
+        "name": "Monochrome Acid Wave Graphic Tee",
+        "size": "L",
+        "quantity": 1,
+        "price": 799
+      }
+    ],
+    "subtotal": 799,
+    "discount": 399.5,
+    "total": 399.5,
+    "coupon": "WAVE50",
+    "paymentMethod": "Cash on Delivery",
+    "status": "Processing",
+    "orderType": "WhatsApp / Web",
+    "createdAt": "2026-09-21T18:30:00.000Z"
+  }
+]
+
