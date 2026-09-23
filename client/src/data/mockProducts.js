@@ -1,83 +1,104 @@
 export const INITIAL_PRODUCTS = [
   {
     id: "ww-pt-01",
-    name: "Monochrome Acid Wave Graphic Tee",
-    category: "printed-tees",
-    categoryLabel: "Unique Collection of Printed T-Shirts",
-    price: 799,
-    originalPrice: 1599,
-    tag: "Bestseller",
-    sizes: ["S", "M", "L", "XL", "XXL"],
-    description: "240 GSM 100% combed cotton, heavy screen printed custom typography on chest & back. Oversized drop-shoulder streetwear fit.",
-    fabricType: "100% Super Combed Compact Cotton",
-    gsm: "240 GSM Heavyweight",
-    weave: "Single Jersey Heavy Knit",
-    fit: "Oversized Drop-Shoulder Boxy Silhouette",
-    printTech: "High-Density Plastisol Screen Print with Anti-Cracking Finish",
-    care: "Machine wash cold inside-out, tumble dry low or shade dry, do not iron directly on print",
-    stockCount: 4,
-    modelInfo: "Model is 5'11\" (180 cm) wearing size L for slouchy streetwear drape",
-    inStock: true,
-    featured: true,
-    image: "https://images.unsplash.com/photo-1576566588028-4147f3842f27?auto=format&fit=crop&w=1000&q=80",
-    images: [
-      "https://images.unsplash.com/photo-1576566588028-4147f3842f27?auto=format&fit=crop&w=1000&q=80",
-      "https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?auto=format&fit=crop&w=1000&q=80",
-      "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=1000&q=80"
-    ]
-  },
-  {
-    id: "ww-pt-02",
-    name: "Distressed Skull Riot Heavy Tee",
-    category: "printed-tees",
-    categoryLabel: "Unique Collection of Printed T-Shirts",
-    price: 849,
-    originalPrice: 1699,
-    tag: "Trending",
-    sizes: ["M", "L", "XL"],
-    description: "Vintage dark grunge washed finish with crackled screenprint artwork. Ultra-breathable heavyweight knit with reinforced ribbed collar.",
-    fabricType: "100% Ring-Spun Pre-Shrunk Bio-Washed Cotton",
-    gsm: "250 GSM Acid-Washed Heavyweight",
-    weave: "Garment-Dyed Slub Knit",
-    fit: "Relaxed Boxy Fit with Dropped Armholes",
-    printTech: "Distressed Crackle Screenprint with Raw Stonewash Texture",
-    care: "Wash separately in cold water, do not bleach, steam iron inside out",
-    stockCount: 6,
-    modelInfo: "Model is 6'0\" (183 cm) wearing size XL",
-    inStock: true,
-    featured: false,
-    image: "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=1000&q=80",
-    images: [
-      "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=1000&q=80",
-      "https://images.unsplash.com/photo-1618354691373-d851c5c3a990?auto=format&fit=crop&w=1000&q=80",
-      "https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?auto=format&fit=crop&w=1000&q=80"
-    ]
-  },
-  {
-    id: "ww-pt-03",
-    name: "Neo-Tokyo Cyber Wave Oversized Tee",
+    name: "WRON_WAVE GT3 'Track Bred' Heavy Tee",
     category: "printed-tees",
     categoryLabel: "Unique Collection of Printed T-Shirts",
     price: 899,
     originalPrice: 1799,
-    tag: "New Drop",
-    sizes: ["S", "M", "L", "XL"],
-    description: "Futuristic Kanji & wave vector back print. Matte puff printing with high resistance to wash cracking.",
-    fabricType: "100% Combed Cotton Single Jersey",
-    gsm: "240 GSM Heavyweight",
-    weave: "Interlock Fine Cotton Knit",
-    fit: "Extended Oversized Streetwear Fit",
-    printTech: "Matte 3D Puff Print on Chest & Full Back Graphic",
-    care: "Gentle cold cycle, wash inside out, iron on reverse side only",
-    stockCount: 3,
-    modelInfo: "Model is 5'9\" (175 cm) wearing size M",
+    tag: "Signature Drop",
+    sizes: ["S", "M", "L", "XL", "XXL"],
+    description: "Official WRON_WAVE Porsche 911 GT3 race-inspired graphic tee. Dual colorways in Bone Cream & Vintage Slate Blue. Crown badge back-print: 'Track Bred. Street Ready - Speed Builds Better Days'.",
+    fabricType: "100% Ring-Spun Compact Heavyweight Cotton",
+    gsm: "250 GSM Premium Cotton",
+    weave: "Single Jersey Heavyweight Knit",
+    fit: "Oversized Drop-Shoulder Streetwear Silhouette",
+    printTech: "Multi-Color HD Plastisol Back Screenprint with Crown Crest",
+    care: "Machine wash cold inside-out, tumble dry low or shade dry, do not iron directly on graphic",
+    stockCount: 4,
+    modelInfo: "Track model is 6'0\" (183cm) wearing size L in Bone Cream for relaxed streetwear drape",
     inStock: true,
     featured: true,
-    image: "https://images.unsplash.com/photo-1618354691373-d851c5c3a990?auto=format&fit=crop&w=1000&q=80",
+    image: "/products/wron_wave_track_bred_model.jpg",
     images: [
-      "https://images.unsplash.com/photo-1618354691373-d851c5c3a990?auto=format&fit=crop&w=1000&q=80",
-      "https://images.unsplash.com/photo-1576566588028-4147f3842f27?auto=format&fit=crop&w=1000&q=80",
-      "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=1000&q=80"
+      "/products/wron_wave_track_bred_model.jpg",
+      "/products/wron_wave_porsche_hangers.jpg"
+    ]
+  },
+  {
+    id: "ww-pt-02",
+    name: "'Every Dog Has A Day' Heavyweight Tee",
+    category: "printed-tees",
+    categoryLabel: "Unique Collection of Printed T-Shirts",
+    price: 849,
+    originalPrice: 1699,
+    tag: "Fan Favorite",
+    sizes: ["M", "L", "XL", "XXL"],
+    description: "Clean minimal front with massive atmospheric mountain sunset & loyal German Shepherd back graphic. Custom typography: 'EVERY DOG HAS A DAY'. 100% thick premium cotton.",
+    fabricType: "100% Super Combed Bio-Washed Cotton",
+    gsm: "240 GSM Heavy Cotton",
+    weave: "Compact Ring-Spun Knit",
+    fit: "Boxy Streetwear Slouchy Fit with Dropped Armholes",
+    printTech: "Monochrome Grayscale Halftone Screenprint with Detail Haze",
+    care: "Wash separately in cold water inside-out, do not bleach, steam iron inside out",
+    stockCount: 5,
+    modelInfo: "Model is 5'11\" (180 cm) wearing size L",
+    inStock: true,
+    featured: true,
+    image: "/products/every_dog_has_a_day.jpg",
+    images: [
+      "/products/every_dog_has_a_day.jpg"
+    ]
+  },
+  {
+    id: "ww-pt-03",
+    name: "WRON_WAVE GT3 Vintage Slate Blue Edition",
+    category: "printed-tees",
+    categoryLabel: "Unique Collection of Printed T-Shirts",
+    price: 899,
+    originalPrice: 1799,
+    tag: "Limited Colorway",
+    sizes: ["S", "M", "L", "XL"],
+    description: "Mineral washed vintage slate blue colorway with high-octane Porsche 911 GT3 rear print and official crown crest. Pre-washed for super soft hand-feel.",
+    fabricType: "100% Mineral-Washed Ring-Spun Cotton",
+    gsm: "250 GSM Heavyweight",
+    weave: "Enzyme Softened Slub Weave",
+    fit: "Oversized Boxy Silhouette",
+    printTech: "High-Definition Multi-Layer Screenprint with Speed & Racing Badges",
+    care: "Cold gentle wash with darks, do not bleach, line dry in shade",
+    stockCount: 3,
+    modelInfo: "Model is 5'10\" (178 cm) wearing size L in Slate Blue",
+    inStock: true,
+    featured: true,
+    image: "/products/wron_wave_porsche_hangers.jpg",
+    images: [
+      "/products/wron_wave_porsche_hangers.jpg",
+      "/products/wron_wave_track_bred_model.jpg"
+    ]
+  },
+  {
+    id: "ww-pt-04",
+    name: "'Make Every Story Wonderful' Clapperboard Tee",
+    category: "printed-tees",
+    categoryLabel: "Unique Collection of Printed T-Shirts",
+    price: 799,
+    originalPrice: 1599,
+    tag: "Retro Cinema",
+    sizes: ["S", "M", "L", "XL"],
+    description: "Authentic film production clapperboard front graphic. 'PROD. WHOOSIS - SLATE 875 | TAKE 1 - Make Every Story Wonderful'. Thick ribbed crewneck with reinforced collar.",
+    fabricType: "100% Combed Heavy Jersey Cotton",
+    gsm: "240 GSM Heavyweight",
+    weave: "Interlock Fine Combed Jersey",
+    fit: "Relaxed Boxy Skate Cut",
+    printTech: "Vintage Distressed Chalk Screenprint with Crackled Film Slate",
+    care: "Gentle cold cycle inside out, iron on reverse side only",
+    stockCount: 6,
+    modelInfo: "Model is 5'9\" (175 cm) wearing size M",
+    inStock: true,
+    featured: false,
+    image: "/products/whoosis_clapperboard_tee.jpg",
+    images: [
+      "/products/whoosis_clapperboard_tee.jpg"
     ]
   },
   {
@@ -103,8 +124,7 @@ export const INITIAL_PRODUCTS = [
     image: "https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?auto=format&fit=crop&w=1000&q=80",
     images: [
       "https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?auto=format&fit=crop&w=1000&q=80",
-      "https://images.unsplash.com/photo-1527719327859-c6ce80353573?auto=format&fit=crop&w=1000&q=80",
-      "https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?auto=format&fit=crop&w=1000&q=80"
+      "https://images.unsplash.com/photo-1527719327859-c6ce80353573?auto=format&fit=crop&w=1000&q=80"
     ]
   },
   {
@@ -129,9 +149,7 @@ export const INITIAL_PRODUCTS = [
     featured: false,
     image: "https://images.unsplash.com/photo-1527719327859-c6ce80353573?auto=format&fit=crop&w=1000&q=80",
     images: [
-      "https://images.unsplash.com/photo-1527719327859-c6ce80353573?auto=format&fit=crop&w=1000&q=80",
-      "https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?auto=format&fit=crop&w=1000&q=80",
-      "https://images.unsplash.com/photo-1576566588028-4147f3842f27?auto=format&fit=crop&w=1000&q=80"
+      "https://images.unsplash.com/photo-1527719327859-c6ce80353573?auto=format&fit=crop&w=1000&q=80"
     ]
   },
   {
@@ -149,16 +167,15 @@ export const INITIAL_PRODUCTS = [
     weave: "Yarn-Dyed Twill Flannel",
     fit: "Boxy Overshirt Silhouette (Wear open or buttoned)",
     printTech: "Custom Tortoiseshell Resin Buttons & Reinforced Pocket Stitching",
-    care: "Machine wash cold gentle, hang dry recommended to preserve fleece brush, low iron",
+    care: "Machine wash cold gentle, hang dry recommended to preserve brush, low iron",
     stockCount: 4,
-    modelInfo: "Model is 6'0\" (183 cm) wearing size L layered over our Tokyo Drop Tee",
+    modelInfo: "Model is 6'0\" (183 cm) wearing size L layered over our Track Bred Tee",
     inStock: true,
     featured: true,
     image: "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?auto=format&fit=crop&w=1000&q=80",
     images: [
       "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?auto=format&fit=crop&w=1000&q=80",
-      "https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?auto=format&fit=crop&w=1000&q=80",
-      "https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?auto=format&fit=crop&w=1000&q=80"
+      "https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?auto=format&fit=crop&w=1000&q=80"
     ]
   },
   {
@@ -183,9 +200,7 @@ export const INITIAL_PRODUCTS = [
     featured: false,
     image: "https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?auto=format&fit=crop&w=1000&q=80",
     images: [
-      "https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?auto=format&fit=crop&w=1000&q=80",
-      "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?auto=format&fit=crop&w=1000&q=80",
-      "https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?auto=format&fit=crop&w=1000&q=80"
+      "https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?auto=format&fit=crop&w=1000&q=80"
     ]
   },
   {
@@ -211,8 +226,7 @@ export const INITIAL_PRODUCTS = [
     image: "https://images.unsplash.com/photo-1542272604-780c96856592?auto=format&fit=crop&w=1000&q=80",
     images: [
       "https://images.unsplash.com/photo-1542272604-780c96856592?auto=format&fit=crop&w=1000&q=80",
-      "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?auto=format&fit=crop&w=1000&q=80",
-      "https://images.unsplash.com/photo-1552374196-1ab2a1c593e8?auto=format&fit=crop&w=1000&q=80"
+      "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?auto=format&fit=crop&w=1000&q=80"
     ]
   },
   {
@@ -237,9 +251,7 @@ export const INITIAL_PRODUCTS = [
     featured: false,
     image: "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?auto=format&fit=crop&w=1000&q=80",
     images: [
-      "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?auto=format&fit=crop&w=1000&q=80",
-      "https://images.unsplash.com/photo-1542272604-780c96856592?auto=format&fit=crop&w=1000&q=80",
-      "https://images.unsplash.com/photo-1552374196-1ab2a1c593e8?auto=format&fit=crop&w=1000&q=80"
+      "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?auto=format&fit=crop&w=1000&q=80"
     ]
   },
   {
@@ -264,9 +276,7 @@ export const INITIAL_PRODUCTS = [
     featured: true,
     image: "https://images.unsplash.com/photo-1556905055-8f358a7a47b2?auto=format&fit=crop&w=1000&q=80",
     images: [
-      "https://images.unsplash.com/photo-1556905055-8f358a7a47b2?auto=format&fit=crop&w=1000&q=80",
-      "https://images.unsplash.com/photo-1509967419530-da38b4704bc6?auto=format&fit=crop&w=1000&q=80",
-      "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=1000&q=80"
+      "https://images.unsplash.com/photo-1556905055-8f358a7a47b2?auto=format&fit=crop&w=1000&q=80"
     ]
   },
   {
@@ -291,36 +301,7 @@ export const INITIAL_PRODUCTS = [
     featured: false,
     image: "https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?auto=format&fit=crop&w=1000&q=80",
     images: [
-      "https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?auto=format&fit=crop&w=1000&q=80",
-      "https://images.unsplash.com/photo-1552374196-1ab2a1c593e8?auto=format&fit=crop&w=1000&q=80",
-      "https://images.unsplash.com/photo-1542272604-780c96856592?auto=format&fit=crop&w=1000&q=80"
-    ]
-  },
-  {
-    id: "ww-gz-03",
-    name: "Layered Grunge Washed Thermal Longsleeve",
-    category: "youth-outfits",
-    categoryLabel: "Trendy Gen-Z Styles Youth Outfits",
-    price: 1099,
-    originalPrice: 2199,
-    tag: "Vintage Wash",
-    sizes: ["S", "M", "L", "XL"],
-    description: "Dual-sleeve layered grunge effect with waffle-knit contrast arms and raw distressed hems.",
-    fabricType: "100% Combed Thermal Cotton & Jersey Dual-Layer",
-    gsm: "240 GSM Waffle & Heavy Jersey",
-    weave: "Honey-comb Waffle Knit Arms with Single Jersey Body",
-    fit: "Slouchy Skate Fit with Extended Sleeves",
-    printTech: "Enzyme Distressed Acid Wash with Raw Overlock Stitched Hems",
-    care: "Cold wash inside out, gentle cycle, dry flat",
-    stockCount: 4,
-    modelInfo: "Model is 6'0\" (183 cm) wearing size L",
-    inStock: true,
-    featured: true,
-    image: "https://images.unsplash.com/photo-1509967419530-da38b4704bc6?auto=format&fit=crop&w=1000&q=80",
-    images: [
-      "https://images.unsplash.com/photo-1509967419530-da38b4704bc6?auto=format&fit=crop&w=1000&q=80",
-      "https://images.unsplash.com/photo-1556905055-8f358a7a47b2?auto=format&fit=crop&w=1000&q=80",
-      "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=1000&q=80"
+      "https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?auto=format&fit=crop&w=1000&q=80"
     ]
   }
 ];
@@ -338,6 +319,7 @@ export const BRAND_INFO = {
   taglines: [
     "Wear Your Story",
     "Good Clothes Better Days",
+    "Track Bred. Street Ready.",
     "Style For Every Vibe"
   ],
   deliveryNote: "Express Door Delivery across Hyderabad Areas (Jubilee Hills, Banjara Hills, Madhapur, Gachibowli, Kukatpally & Beyond)",
@@ -348,34 +330,34 @@ export const BRAND_INFO = {
 export const LOOKBOOK_POSTS = [
   {
     id: "fit-01",
-    user: "@karthik_fits",
-    product: "Monochrome Acid Wave Tee + 90s Acid Denim",
-    image: "https://images.unsplash.com/photo-1552374196-1ab2a1c593e8?auto=format&fit=crop&w=800&q=80",
-    likes: "1.4k",
-    tag: "Hyderabad Streetwear"
+    user: "@wron_wave",
+    product: "WRON_WAVE GT3 'Track Bred' Limited Drop",
+    image: "/products/wron_wave_track_bred_model.jpg",
+    likes: "3.8k",
+    tag: "Racetrack Drip"
   },
   {
     id: "fit-02",
-    user: "@varun_waves",
-    product: "Star Patch Heavyweight Zip Hoodie",
-    image: "https://images.unsplash.com/photo-1509967419530-da38b4704bc6?auto=format&fit=crop&w=800&q=80",
-    likes: "2.1k",
-    tag: "Oversized Fit"
+    user: "@wron_wave",
+    product: "'Every Dog Has A Day' Heavyweight Tee",
+    image: "/products/every_dog_has_a_day.jpg",
+    likes: "2.9k",
+    tag: "Atmospheric Print"
   },
   {
     id: "fit-03",
-    user: "@rahul.drip",
-    product: "Vintage Plaid Flannel + Baggy Skater Jeans",
-    image: "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=800&q=80",
-    likes: "980",
-    tag: "Vintage Grunge"
+    user: "@wron_wave",
+    product: "GT3 Dual Hanger Pack (Cream & Vintage Blue)",
+    image: "/products/wron_wave_porsche_hangers.jpg",
+    likes: "4.2k",
+    tag: "Dual Colorways"
   },
   {
     id: "fit-04",
-    user: "@sneakerhead_hyd",
-    product: "Tokyo Minimalist Boxy Drop Tee",
-    image: "https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?auto=format&fit=crop&w=800&q=80",
-    likes: "1.8k",
-    tag: "Sneaker Match"
+    user: "@wron_wave",
+    product: "'Make Every Story Wonderful' Film Slate Tee",
+    image: "/products/whoosis_clapperboard_tee.jpg",
+    likes: "2.1k",
+    tag: "Cinema Cut"
   }
 ];
