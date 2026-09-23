@@ -4,7 +4,6 @@ import InstagramIcon from './InstagramIcon';
 import TelegramIcon from './TelegramIcon';
 import { BRAND_INFO } from '../data/mockProducts';
 import { sendWhatsAppOrder, sendInstagramOrder, sendTelegramOrder } from '../utils/orderChannels';
-import { saveCustomerOrder } from '../services/cloudDb';
 
 export default function ProductDetailModal({ 
   product, 
@@ -46,33 +45,15 @@ export default function ProductDetailModal({
     coupon: 'WAVE50'
   });
 
-  const recordDirectOrder = (channelName) => {
-    const payload = getOrderPayload();
-    saveCustomerOrder({
-      id: `ORD-${Date.now().toString().slice(-4)}`,
-      items: payload.items,
-      subtotal: payload.subtotal,
-      discount: payload.discount,
-      total: payload.total,
-      paymentMethod: 'UPI / COD',
-      orderChannel: channelName,
-      status: 'Channel Order Initiated',
-      createdAt: new Date().toISOString()
-    });
-  };
-
   const handleDirectWhatsApp = () => {
-    recordDirectOrder('WhatsApp (Drop Modal)');
     sendWhatsAppOrder(getOrderPayload());
   };
 
   const handleDirectInstagram = () => {
-    recordDirectOrder('Instagram DM (Drop Modal)');
     sendInstagramOrder(getOrderPayload());
   };
 
   const handleDirectTelegram = () => {
-    recordDirectOrder('Telegram (Drop Modal)');
     sendTelegramOrder(getOrderPayload());
   };
 

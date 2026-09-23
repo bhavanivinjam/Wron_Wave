@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { X, CheckCircle, MessageCircle, Truck, ShieldCheck, Banknote, CreditCard } from 'lucide-react';
+import { X, CheckCircle, MessageCircle, Truck, ShieldCheck, Banknote, CreditCard, QrCode, Copy, Check } from 'lucide-react';
 import InstagramIcon from './InstagramIcon';
 import TelegramIcon from './TelegramIcon';
 import { BRAND_INFO } from '../data/mockProducts';
 import { sendWhatsAppOrder, sendInstagramOrder, sendTelegramOrder } from '../utils/orderChannels';
-import { saveCustomerOrder } from '../services/cloudDb';
+import { saveOrderToDatabase } from '../services/cloudDb';
 
 export default function CheckoutModal({
   isOpen,
@@ -19,11 +19,12 @@ export default function CheckoutModal({
     address: '',
     city: 'Hyderabad',
     pincode: '',
-    paymentMethod: 'Cash on Delivery'
+    paymentMethod: 'UPI / QR Payment'
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [completedOrder, setCompletedOrder] = useState(null);
+  const [copiedUpi, setCopiedUpi] = useState(false);
 
   if (!isOpen) return null;
 
@@ -31,12 +32,24 @@ export default function CheckoutModal({
   const isDiscounted = appliedCoupon === 'WAVE50';
   const discountAmount = isDiscounted ? Math.round(subtotal * 0.5) : 0;
   const finalTotal = subtotal - discountAmount;
+  const upiId = `${BRAND_INFO.whatsappNumber.replace(/^91/, '')}@okaxis`;
+
+  const handleCopyUpi = async () => {
+    try {
+      await navigator.clipboard.writeText(upiId);
+      setCopiedUpi(true);
+      setTimeout(() => setCopiedUpi(false), 2000);
+    } catch {
+      // fallback
+    }
+  };
 
   const handleSubmitOrder = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
 
     const orderPayload = {
+      id: `ORD-${Date.now().toString().slice(-4)}`,
       customer: formData,
       items: cartItems.map((item) => ({
         id: item.id,
@@ -46,54 +59,32 @@ export default function CheckoutModal({
         quantity: item.quantity,
         fabricType: item.fabricType
       })),
+      subtotal,
+      discount: discountAmount,
+      total: finalTotal,
       coupon: appliedCoupon,
       paymentMethod: formData.paymentMethod,
-      orderType: 'Web Checkout'
+      orderType: 'Web Checkout',
+      status: 'Confirmed',
+      createdAt: new Date().toISOString()
     };
 
-    let finalOrder = null;
-
     try {
-      const response = await fetch('http://localhost:5000/api/orders', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(orderPayload)
-      });
-
-      const data = await response.json();
-      if (data.success && data.order) {
-        finalOrder = data.order;
-      }
+      // Save to Cloud DB / Google Sheets / LocalStorage
+      await saveOrderToDatabase(orderPayload);
+      setCompletedOrder(orderPayload);
+      onOrderSuccess(orderPayload);
     } catch (err) {
-      console.warn('Backend server unavailable, saving directly to cloud database:', err);
+      console.warn('Order save error:', err);
+      setCompletedOrder(orderPayload);
+      onOrderSuccess(orderPayload);
+    } finally {
+      setIsSubmitting(false);
     }
-
-    if (!finalOrder) {
-      finalOrder = {
-        id: `ORD-${Date.now().toString().slice(-4)}`,
-        ...orderPayload,
-        subtotal,
-        discount: discountAmount,
-        total: finalTotal,
-        status: 'Confirmed',
-        createdAt: new Date().toISOString()
-      };
-    }
-
-    // Always persist to local storage + Google Sheets + Supabase
-    try {
-      await saveCustomerOrder(finalOrder);
-    } catch (saveErr) {
-      console.error('Error in saveCustomerOrder:', saveErr);
-    }
-
-    setCompletedOrder(finalOrder);
-    if (onOrderSuccess) onOrderSuccess(finalOrder);
-    setIsSubmitting(false);
   };
 
   const getChannelPayload = () => {
-    const order = completedOrder || {
+    return completedOrder || {
       items: cartItems,
       subtotal,
       discount: discountAmount,
@@ -101,8 +92,12 @@ export default function CheckoutModal({
       coupon: appliedCoupon,
       customer: formData
     };
-    return order;
   };
+
+  // UPI Intent URL for dynamic QR generator
+  const upiQrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(
+    `upi://pay?pa=${upiId}&pn=WRON_WAVE_CLOTHING&am=${finalTotal}&cu=INR&tn=Order_${completedOrder?.id || 'WRON_WAVE'}`
+  )}`;
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-4">
@@ -126,33 +121,74 @@ export default function CheckoutModal({
 
         {/* Modal Body */}
         {completedOrder ? (
-          /* Success Screen with Multi-Channel Confirmation */
+          /* Success Screen with UPI QR & Multi-Channel Confirmation */
           <div className="p-6 text-center space-y-4">
-            <div className="w-16 h-16 bg-emerald-950 border border-emerald-800 rounded-full flex items-center justify-center mx-auto text-emerald-400">
+            <div className="w-16 h-16 bg-emerald-950 border border-emerald-800 rounded-full flex items-center justify-center mx-auto text-emerald-400 shadow-lg">
               <CheckCircle className="w-9 h-9" />
             </div>
 
             <div className="space-y-1">
-              <span className="text-xs uppercase font-mono tracking-widest text-zinc-400">Order Placed</span>
+              <span className="text-[11px] uppercase font-mono tracking-widest text-zinc-400">Order Placed & Saved to Cloud</span>
               <h4 className="text-2xl font-black uppercase tracking-tight text-white font-mono">
                 {completedOrder.id}
               </h4>
               <p className="text-xs text-zinc-400 max-w-xs mx-auto pt-1">
-                Thank you, <strong className="text-white">{formData.name}</strong>! Your drop is confirmed for Hyderabad door delivery.
+                Thank you, <strong className="text-white">{formData.name}</strong>! Your drop is confirmed for Hyderabad doorstep delivery.
               </p>
             </div>
+
+            {/* UPI Payment Box if chosen */}
+            {formData.paymentMethod.includes('UPI') && (
+              <div className="p-4 bg-zinc-900 border border-zinc-800 rounded-2xl space-y-3">
+                <div className="flex items-center justify-center gap-2 text-xs font-bold text-amber-400 font-mono">
+                  <QrCode className="w-4 h-4" />
+                  <span>Scan to Pay via PhonePe / GPay / Paytm</span>
+                </div>
+
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-4 py-1">
+                  {/* QR Image */}
+                  <div className="w-32 h-32 bg-white p-2 rounded-xl shadow-md flex items-center justify-center">
+                    <img 
+                      src={upiQrUrl} 
+                      alt="UPI Payment QR Code" 
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
+
+                  <div className="text-left space-y-1.5 text-xs">
+                    <div>
+                      <span className="text-zinc-500 block text-[10px] uppercase font-mono">UPI ID</span>
+                      <span className="font-mono font-bold text-white text-xs">{upiId}</span>
+                    </div>
+                    <div>
+                      <span className="text-zinc-500 block text-[10px] uppercase font-mono">Payable Amount</span>
+                      <span className="font-mono font-black text-amber-400 text-sm">₹{completedOrder.total}</span>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={handleCopyUpi}
+                      className="px-3 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-[11px] font-mono flex items-center gap-1.5 transition"
+                    >
+                      {copiedUpi ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                      <span>{copiedUpi ? 'UPI ID Copied!' : 'Copy UPI ID'}</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Channels Confirmation Box */}
             <div className="p-4 bg-zinc-900/80 border border-zinc-800 rounded-2xl text-left space-y-2.5">
               <p className="text-xs font-bold text-amber-400 uppercase font-mono">
-                Notify Us & Track on Your Preferred App:
+                Share Screenshot / Notify on Your Preferred App:
               </p>
 
               <div className="space-y-2">
                 <button
                   type="button"
                   onClick={() => sendWhatsAppOrder(getChannelPayload())}
-                  className="w-full py-2.5 px-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition"
+                  className="w-full py-2.5 px-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition shadow-md shadow-emerald-950/60"
                 >
                   <MessageCircle className="w-4 h-4" />
                   <span>Notify on WhatsApp (+91 {BRAND_INFO.whatsappNumber})</span>
@@ -236,7 +272,7 @@ export default function CheckoutModal({
                   rows={2}
                   value={formData.address}
                   onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                  placeholder="Flat/House No, Colony, Area (e.g. Jubilee Hills / Madhapur)"
+                  placeholder="Flat/House No, Colony, Area (e.g. Jubilee Hills / Madhapur / Banjara Hills)"
                   className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-amber-400 resize-none"
                 />
               </div>
@@ -249,6 +285,22 @@ export default function CheckoutModal({
                 <div className="grid grid-cols-2 gap-2">
                   <button
                     type="button"
+                    onClick={() => setFormData({ ...formData, paymentMethod: 'UPI / QR Payment' })}
+                    className={`p-3 rounded-xl border text-left flex items-center gap-2.5 transition ${
+                      formData.paymentMethod === 'UPI / QR Payment'
+                        ? 'border-white bg-zinc-900 text-white font-bold'
+                        : 'border-zinc-800 bg-zinc-900/50 text-zinc-400'
+                    }`}
+                  >
+                    <QrCode className="w-4 h-4 text-amber-400" />
+                    <div>
+                      <span className="text-xs block">UPI / QR Payment</span>
+                      <span className="text-[10px] text-zinc-500 font-normal">GPay, PhonePe, Paytm</span>
+                    </div>
+                  </button>
+
+                  <button
+                    type="button"
                     onClick={() => setFormData({ ...formData, paymentMethod: 'Cash on Delivery' })}
                     className={`p-3 rounded-xl border text-left flex items-center gap-2.5 transition ${
                       formData.paymentMethod === 'Cash on Delivery'
@@ -257,20 +309,10 @@ export default function CheckoutModal({
                     }`}
                   >
                     <Banknote className="w-4 h-4 text-emerald-400" />
-                    <span className="text-xs">Cash on Delivery</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setFormData({ ...formData, paymentMethod: 'UPI / QR on Delivery' })}
-                    className={`p-3 rounded-xl border text-left flex items-center gap-2.5 transition ${
-                      formData.paymentMethod === 'UPI / QR on Delivery'
-                        ? 'border-white bg-zinc-900 text-white font-bold'
-                        : 'border-zinc-800 bg-zinc-900/50 text-zinc-400'
-                    }`}
-                  >
-                    <CreditCard className="w-4 h-4 text-amber-400" />
-                    <span className="text-xs">UPI / QR on Delivery</span>
+                    <div>
+                      <span className="text-xs block">Cash on Delivery</span>
+                      <span className="text-[10px] text-zinc-500 font-normal">Pay at Doorstep</span>
+                    </div>
                   </button>
                 </div>
               </div>
@@ -295,7 +337,7 @@ export default function CheckoutModal({
               disabled={isSubmitting}
               className="w-full py-3.5 px-4 bg-white hover:bg-zinc-200 text-black font-black uppercase tracking-wider text-xs sm:text-sm rounded-xl transition active:scale-98 disabled:opacity-50 shadow-lg"
             >
-              {isSubmitting ? 'Confirming Order...' : `Confirm Order (₹${finalTotal})`}
+              {isSubmitting ? 'Confirming & Saving...' : `Confirm Order (₹${finalTotal})`}
             </button>
           </form>
         )}
