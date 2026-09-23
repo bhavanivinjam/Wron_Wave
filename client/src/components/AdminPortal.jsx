@@ -1,6 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Package, ShoppingBag, PlusCircle, RefreshCw, User, Phone, MapPin, CheckCircle, Clock, Download, FileSpreadsheet, Database, Copy, Check } from 'lucide-react';
-import { getCustomerOrders, exportOrdersToCSV } from '../services/cloudDb';
+import { Package, ShoppingBag, PlusCircle, RefreshCw, User, Phone, MapPin, CheckCircle, Clock, Download, FileSpreadsheet, Database, Copy, Check, Send, ExternalLink, ShieldCheck } from 'lucide-react';
+import { 
+  getCustomerOrders, 
+  exportOrdersToCSV, 
+  getStoredCloudConfig, 
+  saveStoredCloudConfig, 
+  testGoogleSheetsWebhook, 
+  testSupabaseConnection 
+} from '../services/cloudDb';
 import { GOOGLE_SHEETS_CODE } from '../services/googleSheetsGuide';
 
 export default function AdminPortal({ onBackToStore, onProductAdded }) {
@@ -8,6 +15,12 @@ export default function AdminPortal({ onBackToStore, onProductAdded }) {
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('orders'); // 'orders', 'new-product', or 'database'
   const [copiedScript, setCopiedScript] = useState(false);
+
+  const [cloudConfig, setCloudConfig] = useState(() => getStoredCloudConfig());
+  const [sheetSaveStatus, setSheetSaveStatus] = useState('');
+  const [supabaseSaveStatus, setSupabaseSaveStatus] = useState('');
+  const [testingSheet, setTestingSheet] = useState(false);
+  const [testingSupabase, setTestingSupabase] = useState(false);
 
   const [newProduct, setNewProduct] = useState({
     name: '',
@@ -118,6 +131,61 @@ export default function AdminPortal({ onBackToStore, onProductAdded }) {
       setTimeout(() => setCopiedScript(false), 2000);
     } catch (e) {
       console.error(e);
+    }
+  };
+
+  const handleSaveSheetUrl = (e) => {
+    e.preventDefault();
+    const success = saveStoredCloudConfig({ googleSheetsUrl: cloudConfig.googleSheetsUrl });
+    if (success) {
+      setSheetSaveStatus('Saved! Future customer orders will auto-sync to your Google Sheet.');
+      setTimeout(() => setSheetSaveStatus(''), 4000);
+    }
+  };
+
+  const handleTestSheetSync = async () => {
+    if (!cloudConfig.googleSheetsUrl) {
+      setSheetSaveStatus('Please enter a Webhook URL first.');
+      return;
+    }
+    setTestingSheet(true);
+    setSheetSaveStatus('Sending test verification row to Google Sheet...');
+    try {
+      await testGoogleSheetsWebhook(cloudConfig.googleSheetsUrl);
+      setSheetSaveStatus('✅ Test order sent! Check your Google Sheet to verify the new row.');
+    } catch (err) {
+      setSheetSaveStatus('❌ Error: ' + err.message);
+    } finally {
+      setTestingSheet(false);
+    }
+  };
+
+  const handleSaveSupabase = (e) => {
+    e.preventDefault();
+    const success = saveStoredCloudConfig({
+      supabaseUrl: cloudConfig.supabaseUrl,
+      supabaseKey: cloudConfig.supabaseKey
+    });
+    if (success) {
+      setSupabaseSaveStatus('Saved! Supabase cloud database credentials stored.');
+      setTimeout(() => setSupabaseSaveStatus(''), 4000);
+    }
+  };
+
+  const handleTestSupabase = async () => {
+    if (!cloudConfig.supabaseUrl || !cloudConfig.supabaseKey) {
+      setSupabaseSaveStatus('Please provide both Project URL and Anon Key.');
+      return;
+    }
+    setTestingSupabase(true);
+    setSupabaseSaveStatus('Testing connection to Supabase...');
+    try {
+      await testSupabaseConnection(cloudConfig.supabaseUrl, cloudConfig.supabaseKey);
+      setSupabaseSaveStatus('✅ Supabase connected successfully! Orders table reachable.');
+    } catch (err) {
+      setSupabaseSaveStatus('❌ ' + err.message);
+    } finally {
+      setTestingSupabase(false);
     }
   };
 
@@ -363,15 +431,142 @@ export default function AdminPortal({ onBackToStore, onProductAdded }) {
               </div>
             </div>
 
-            {/* Supabase Card */}
-            <div className="p-4 bg-zinc-950 rounded-2xl border border-zinc-800 space-y-2 text-xs mt-4">
-              <div className="flex items-center gap-2 text-emerald-400">
-                <Database className="w-4 h-4" />
-                <span className="font-bold uppercase tracking-wider">Supabase (PostgreSQL Cloud)</span>
+            {/* STEP 3: Connect Webhook */}
+            <div className="p-5 bg-zinc-950 rounded-2xl border border-zinc-800 space-y-3 text-xs mt-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-amber-400">
+                  <span className="px-2 py-0.5 bg-amber-400/20 text-amber-400 font-mono font-bold rounded text-[10px]">
+                    STEP 3: Paste Webhook URL
+                  </span>
+                  <span className="font-bold text-white">Live Sheet Connection</span>
+                </div>
+                {cloudConfig.googleSheetsUrl && (
+                  <span className="text-[10px] font-mono text-emerald-400 flex items-center gap-1">
+                    <CheckCircle className="w-3 h-3" /> Configured
+                  </span>
+                )}
               </div>
-              <p className="text-zinc-400 text-[11px]">
-                Your store is also pre-configured with Supabase support. Whenever you want to connect a dedicated PostgreSQL cloud database, simply add your free <code className="text-amber-400 font-mono">VITE_SUPABASE_URL</code> and <code className="text-amber-400 font-mono">VITE_SUPABASE_ANON_KEY</code> to your environment.
+
+              <form onSubmit={handleSaveSheetUrl} className="space-y-3">
+                <input
+                  type="url"
+                  value={cloudConfig.googleSheetsUrl}
+                  onChange={(e) => setCloudConfig({ ...cloudConfig, googleSheetsUrl: e.target.value })}
+                  placeholder="https://script.google.com/macros/s/AKfycb.../exec"
+                  className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2.5 text-white placeholder-zinc-500 font-mono text-xs focus:outline-none focus:border-amber-400"
+                />
+
+                <div className="flex flex-wrap items-center gap-2">
+                  <button
+                    type="submit"
+                    className="py-2 px-4 bg-amber-400 hover:bg-amber-300 text-black font-bold uppercase tracking-wider text-xs rounded-xl transition"
+                  >
+                    Save Webhook URL
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handleTestSheetSync}
+                    disabled={testingSheet}
+                    className="py-2 px-4 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-bold uppercase tracking-wider text-xs rounded-xl transition flex items-center gap-1.5 disabled:opacity-50"
+                  >
+                    <Send className="w-3.5 h-3.5 text-amber-400" />
+                    <span>{testingSheet ? 'Sending Ping...' : '⚡ Test Google Sheet (Ping Now)'}</span>
+                  </button>
+                </div>
+              </form>
+
+              {sheetSaveStatus && (
+                <p className="text-[11px] font-mono p-2 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-300">
+                  {sheetSaveStatus}
+                </p>
+              )}
+            </div>
+
+            {/* Supabase PostgreSQL Cloud Database */}
+            <div className="p-5 bg-zinc-950 rounded-2xl border border-zinc-800 space-y-3 text-xs mt-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-emerald-400">
+                  <Database className="w-4 h-4" />
+                  <span className="font-bold uppercase tracking-wider text-white">Supabase PostgreSQL Database (Free Tier)</span>
+                </div>
+                {cloudConfig.supabaseUrl && (
+                  <span className="text-[10px] font-mono text-emerald-400 flex items-center gap-1">
+                    <ShieldCheck className="w-3.5 h-3.5" /> Database Linked
+                  </span>
+                )}
+              </div>
+
+              <p className="text-zinc-400 text-[11px] leading-relaxed">
+                Supabase offers 500 MB permanent free PostgreSQL storage (500,000+ orders). If you created a free project at <a href="https://supabase.com" target="_blank" rel="noopener noreferrer" className="text-emerald-400 underline">supabase.com</a>, enter your credentials below:
               </p>
+
+              <form onSubmit={handleSaveSupabase} className="space-y-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-zinc-400 font-mono text-[10px] uppercase mb-1">Project URL</label>
+                    <input
+                      type="url"
+                      value={cloudConfig.supabaseUrl}
+                      onChange={(e) => setCloudConfig({ ...cloudConfig, supabaseUrl: e.target.value })}
+                      placeholder="https://xyzcompany.supabase.co"
+                      className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-white placeholder-zinc-500 font-mono text-xs focus:outline-none focus:border-emerald-400"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-zinc-400 font-mono text-[10px] uppercase mb-1">Anon Public Key</label>
+                    <input
+                      type="password"
+                      value={cloudConfig.supabaseKey}
+                      onChange={(e) => setCloudConfig({ ...cloudConfig, supabaseKey: e.target.value })}
+                      placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6..."
+                      className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-white placeholder-zinc-500 font-mono text-xs focus:outline-none focus:border-emerald-400"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2">
+                  <button
+                    type="submit"
+                    className="py-2 px-4 bg-emerald-600 hover:bg-emerald-500 text-white font-bold uppercase tracking-wider text-xs rounded-xl transition"
+                  >
+                    Save Supabase Credentials
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handleTestSupabase}
+                    disabled={testingSupabase}
+                    className="py-2 px-4 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-bold uppercase tracking-wider text-xs rounded-xl transition flex items-center gap-1.5 disabled:opacity-50"
+                  >
+                    <RefreshCw className={`w-3.5 h-3.5 text-emerald-400 ${testingSupabase ? 'animate-spin' : ''}`} />
+                    <span>{testingSupabase ? 'Testing Connection...' : '⚡ Test Connection'}</span>
+                  </button>
+                </div>
+              </form>
+
+              {supabaseSaveStatus && (
+                <p className="text-[11px] font-mono p-2 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-300">
+                  {supabaseSaveStatus}
+                </p>
+              )}
+            </div>
+
+            {/* Offline & Local Persistence Info */}
+            <div className="p-4 bg-zinc-950/60 rounded-2xl border border-zinc-850 flex items-center justify-between text-xs">
+              <div className="space-y-0.5">
+                <span className="font-bold text-white">Need an Instant Excel Backup?</span>
+                <p className="text-zinc-500 text-[11px]">Download all customer records in 1 click even without internet.</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => exportOrdersToCSV(orders)}
+                className="py-2 px-3 bg-zinc-800 hover:bg-zinc-700 text-white font-bold text-xs rounded-xl flex items-center gap-1.5 transition"
+              >
+                <Download className="w-3.5 h-3.5 text-amber-400" />
+                <span>Export CSV</span>
+              </button>
             </div>
           </div>
         </div>

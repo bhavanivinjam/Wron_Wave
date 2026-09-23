@@ -4,6 +4,7 @@ import InstagramIcon from './InstagramIcon';
 import TelegramIcon from './TelegramIcon';
 import { BRAND_INFO } from '../data/mockProducts';
 import { sendWhatsAppOrder, sendInstagramOrder, sendTelegramOrder } from '../utils/orderChannels';
+import { saveCustomerOrder } from '../services/cloudDb';
 
 export default function CartDrawer({
   isOpen,
@@ -51,18 +52,36 @@ export default function CartDrawer({
     coupon: appliedCoupon
   });
 
+  const recordCartOrder = (channelName) => {
+    const payload = getCartPayload();
+    saveCustomerOrder({
+      id: `ORD-${Date.now().toString().slice(-4)}`,
+      items: payload.items,
+      subtotal: payload.subtotal,
+      discount: payload.discount,
+      total: payload.total,
+      paymentMethod: 'UPI / COD',
+      orderChannel: channelName,
+      status: 'Channel Order Initiated',
+      createdAt: new Date().toISOString()
+    });
+  };
+
   const handleWhatsApp = () => {
     if (!cartItems.length) return;
+    recordCartOrder('WhatsApp (Bag Order)');
     sendWhatsAppOrder(getCartPayload());
   };
 
   const handleInstagram = () => {
     if (!cartItems.length) return;
+    recordCartOrder('Instagram DM (Bag Order)');
     sendInstagramOrder(getCartPayload());
   };
 
   const handleTelegram = () => {
     if (!cartItems.length) return;
+    recordCartOrder('Telegram (Bag Order)');
     sendTelegramOrder(getCartPayload());
   };
 

@@ -7,10 +7,34 @@
  * 3. Local persistent storage with offline zero-friction fallback
  */
 
-// Cloud environment settings (can be defined in .env or Vercel environment variables)
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || '';
-const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
-const GOOGLE_SHEET_WEBHOOK_URL = import.meta.env.VITE_GOOGLE_SHEETS_WEBHOOK_URL || '';
+// Cloud environment settings (can be defined in .env or stored in Admin Portal)
+export function getStoredCloudConfig() {
+  try {
+    return {
+      supabaseUrl: localStorage.getItem('wron_wave_supabase_url') || import.meta.env.VITE_SUPABASE_URL || '',
+      supabaseKey: localStorage.getItem('wron_wave_supabase_key') || import.meta.env.VITE_SUPABASE_ANON_KEY || '',
+      googleSheetsUrl: localStorage.getItem('wron_wave_google_sheets_url') || import.meta.env.VITE_GOOGLE_SHEETS_WEBHOOK_URL || ''
+    };
+  } catch {
+    return {
+      supabaseUrl: import.meta.env.VITE_SUPABASE_URL || '',
+      supabaseKey: import.meta.env.VITE_SUPABASE_ANON_KEY || '',
+      googleSheetsUrl: import.meta.env.VITE_GOOGLE_SHEETS_WEBHOOK_URL || ''
+    };
+  }
+}
+
+export function saveStoredCloudConfig({ supabaseUrl, supabaseKey, googleSheetsUrl }) {
+  try {
+    if (supabaseUrl !== undefined) localStorage.setItem('wron_wave_supabase_url', supabaseUrl.trim());
+    if (supabaseKey !== undefined) localStorage.setItem('wron_wave_supabase_key', supabaseKey.trim());
+    if (googleSheetsUrl !== undefined) localStorage.setItem('wron_wave_google_sheets_url', googleSheetsUrl.trim());
+    return true;
+  } catch (err) {
+    console.error('Failed to save cloud config:', err);
+    return false;
+  }
+}
 
 /**
  * Saves a customer order to:
@@ -19,6 +43,10 @@ const GOOGLE_SHEET_WEBHOOK_URL = import.meta.env.VITE_GOOGLE_SHEETS_WEBHOOK_URL 
  * 3. Supabase Cloud Database (if configured)
  */
 export async function saveCustomerOrder(order) {
+  const config = getStoredCloudConfig();
+  const SUPABASE_URL = config.supabaseUrl;
+  const SUPABASE_ANON_KEY = config.supabaseKey;
+  const GOOGLE_SHEET_WEBHOOK_URL = config.googleSheetsUrl;
   // 1. Local storage persistence
   try {
     const existing = JSON.parse(localStorage.getItem('wron_wave_orders') || '[]');
@@ -99,12 +127,13 @@ export async function saveCustomerOrder(order) {
  * Retrieves all orders from Cloud with fallback to local storage
  */
 export async function getCustomerOrders() {
-  if (SUPABASE_URL && SUPABASE_ANON_KEY) {
+  const { supabaseUrl, supabaseKey } = getStoredCloudConfig();
+  if (supabaseUrl && supabaseKey) {
     try {
-      const res = await fetch(`${SUPABASE_URL}/rest/v1/orders?select=*&order=created_at.desc`, {
+      const res = await fetch(`${supabaseUrl}/rest/v1/orders?select=*&order=created_at.desc`, {
         headers: {
-          'apikey': SUPABASE_ANON_KEY,
-          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+          'apikey': supabaseKey,
+          'Authorization': `Bearer ${supabaseKey}`
         }
       });
       if (res.ok) {
@@ -190,3 +219,48 @@ export function exportOrdersToCSV(orders = []) {
   link.click();
   document.body.removeChild(link);
 }
+
+/**
+ * Sends a test ping order to the Google Sheet webhook
+ */
+export async function testGoogleSheetsWebhook(webhookUrl) {
+  if (!webhookUrl) throw new Error('Please enter a Google Sheets Webhook URL first.');
+  const testPayload = {
+    orderId: 'TEST-' + Math.floor(1000 + Math.random() * 9000),
+    timestamp: new Date().toISOString(),
+    customerName: 'Test Customer (Verification Ping)',
+    phone: '+91 7675833094',
+    address: 'WRON_WAVE Studio, Hyderabad',
+    itemsSummary: 'GT3 Track Bred Tee (L) x1',
+    totalAmount: 899,
+    paymentMethod: 'Test Verification',
+    channel: 'Google Sheets Setup Test',
+    status: 'Test Row'
+  };
+
+  await fetch(webhookUrl, {
+    method: 'POST',
+    mode: 'no-cors',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(testPayload)
+  });
+  return true;
+}
+
+/**
+ * Tests connection to Supabase REST API
+ */
+export async function testSupabaseConnection(supabaseUrl, supabaseKey) {
+  if (!supabaseUrl || !supabaseKey) throw new Error('Please provide both Supabase URL and Anon Key.');
+  const res = await fetch(`${supabaseUrl}/rest/v1/orders?limit=1`, {
+    headers: {
+      'apikey': supabaseKey,
+      'Authorization': `Bearer ${supabaseKey}`
+    }
+  });
+  if (!res.ok) {
+    throw new Error(`Supabase returned status ${res.status}: ${res.statusText}`);
+  }
+  return true;
+}
+

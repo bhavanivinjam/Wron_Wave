@@ -4,6 +4,7 @@ import InstagramIcon from './InstagramIcon';
 import TelegramIcon from './TelegramIcon';
 import { BRAND_INFO } from '../data/mockProducts';
 import { sendWhatsAppOrder, sendInstagramOrder, sendTelegramOrder, formatOrderMessage } from '../utils/orderChannels';
+import { saveCustomerOrder } from '../services/cloudDb';
 
 export default function ChannelOrderModal({ 
   isOpen, 
@@ -26,6 +27,22 @@ export default function ChannelOrderModal({
     }
   };
 
+  const recordChannelOrder = (channelName) => {
+    const orderRecord = {
+      id: `ORD-${Date.now().toString().slice(-4)}`,
+      customer: currentDetails.customer,
+      items: currentDetails.items || [currentDetails],
+      subtotal: currentDetails.subtotal || currentDetails.total,
+      discount: currentDetails.discount || 0,
+      total: currentDetails.total,
+      paymentMethod: 'UPI / COD',
+      orderChannel: channelName,
+      status: 'Channel Order Initiated',
+      createdAt: new Date().toISOString()
+    };
+    saveCustomerOrder(orderRecord);
+  };
+
   const handleCopy = async () => {
     const text = formatOrderMessage(currentDetails);
     try {
@@ -38,18 +55,21 @@ export default function ChannelOrderModal({
   };
 
   const handleWhatsApp = () => {
+    recordChannelOrder('WhatsApp (1-Click Buy)');
     sendWhatsAppOrder(currentDetails);
     if (onSuccess) onSuccess();
     onClose();
   };
 
   const handleInstagram = () => {
+    recordChannelOrder('Instagram DM');
     sendInstagramOrder(currentDetails);
     if (onSuccess) onSuccess();
     onClose();
   };
 
   const handleTelegram = () => {
+    recordChannelOrder('Telegram');
     sendTelegramOrder(currentDetails);
     if (onSuccess) onSuccess();
     onClose();

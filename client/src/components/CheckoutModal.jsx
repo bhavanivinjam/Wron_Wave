@@ -4,6 +4,7 @@ import InstagramIcon from './InstagramIcon';
 import TelegramIcon from './TelegramIcon';
 import { BRAND_INFO } from '../data/mockProducts';
 import { sendWhatsAppOrder, sendInstagramOrder, sendTelegramOrder } from '../utils/orderChannels';
+import { saveCustomerOrder } from '../services/cloudDb';
 
 export default function CheckoutModal({
   isOpen,
@@ -50,6 +51,8 @@ export default function CheckoutModal({
       orderType: 'Web Checkout'
     };
 
+    let finalOrder = null;
+
     try {
       const response = await fetch('http://localhost:5000/api/orders', {
         method: 'POST',
@@ -58,15 +61,15 @@ export default function CheckoutModal({
       });
 
       const data = await response.json();
-      if (data.success) {
-        setCompletedOrder(data.order);
-        onOrderSuccess(data.order);
-      } else {
-        throw new Error(data.message || 'Error creating order');
+      if (data.success && data.order) {
+        finalOrder = data.order;
       }
     } catch (err) {
-      console.warn('Backend unavailable, generating local fallback order:', err);
-      const localOrder = {
+      console.warn('Backend server unavailable, saving directly to cloud database:', err);
+    }
+
+    if (!finalOrder) {
+      finalOrder = {
         id: `ORD-${Date.now().toString().slice(-4)}`,
         ...orderPayload,
         subtotal,
@@ -75,11 +78,18 @@ export default function CheckoutModal({
         status: 'Confirmed',
         createdAt: new Date().toISOString()
       };
-      setCompletedOrder(localOrder);
-      onOrderSuccess(localOrder);
-    } finally {
-      setIsSubmitting(false);
     }
+
+    // Always persist to local storage + Google Sheets + Supabase
+    try {
+      await saveCustomerOrder(finalOrder);
+    } catch (saveErr) {
+      console.error('Error in saveCustomerOrder:', saveErr);
+    }
+
+    setCompletedOrder(finalOrder);
+    if (onOrderSuccess) onOrderSuccess(finalOrder);
+    setIsSubmitting(false);
   };
 
   const getChannelPayload = () => {
