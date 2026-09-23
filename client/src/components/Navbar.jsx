@@ -2,6 +2,7 @@ import React from 'react';
 import { ShoppingBag, Phone, ShieldCheck, Search, Sparkles, Package, Ruler } from 'lucide-react';
 import BrandLogo from './BrandLogo';
 import InstagramIcon from './InstagramIcon';
+import TelegramIcon from './TelegramIcon';
 import { BRAND_INFO } from '../data/mockProducts';
 
 export default function Navbar({ 
@@ -55,7 +56,7 @@ export default function Navbar({
             title="Track your order delivery"
           >
             <Package className="w-3.5 h-3.5 text-amber-400" />
-            <span>Track Order</span>
+            <span>Track</span>
           </button>
 
           {/* Size Guide Button */}
@@ -67,6 +68,18 @@ export default function Navbar({
             <Ruler className="w-3.5 h-3.5 text-zinc-400" />
             <span>Size Chart</span>
           </button>
+
+          {/* Telegram Channel Button */}
+          <a
+            href={BRAND_INFO.telegramUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            title="Join @wron_wave on Telegram"
+            className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-full border border-sky-900/50 bg-sky-950/30 text-sky-400 hover:bg-sky-900/40 hover:border-sky-500/50 transition font-mono"
+          >
+            <TelegramIcon className="w-3.5 h-3.5 text-sky-400" />
+            <span>Telegram</span>
+          </a>
 
           {/* Instagram Button */}
           <a
@@ -143,6 +156,16 @@ export default function Navbar({
           <Package className="w-3.5 h-3.5 text-amber-400" />
           <span>Track</span>
         </button>
+
+        <a
+          href={BRAND_INFO.telegramUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="p-2 bg-sky-950 border border-sky-800 text-sky-400 rounded-xl text-xs flex items-center justify-center"
+          title="Telegram"
+        >
+          <TelegramIcon className="w-4 h-4" />
+        </a>
       </div>
     </header>
   );

@@ -153,3 +153,4 @@ export default function SizeGuideModal({ isOpen, onClose, category = 'printed-te
     </div>
   );
 }
+

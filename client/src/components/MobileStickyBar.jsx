@@ -32,3 +32,4 @@ export default function MobileStickyBar({ cartCount, onOpenCart, onOpenSizeGuide
     </div>
   );
 }
+

@@ -7,6 +7,7 @@ import ProductCard from './components/ProductCard';
 import ProductDetailModal from './components/ProductDetailModal';
 import SizeGuideModal from './components/SizeGuideModal';
 import OrderTrackerModal from './components/OrderTrackerModal';
+import ChannelOrderModal from './components/ChannelOrderModal';
 import LookbookSection from './components/LookbookSection';
 import MobileStickyBar from './components/MobileStickyBar';
 import CartDrawer from './components/CartDrawer';
@@ -38,6 +39,7 @@ export default function App() {
   const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false);
   const [sizeGuideCategory, setSizeGuideCategory] = useState('printed-tees');
   const [isTrackerOpen, setIsTrackerOpen] = useState(false);
+  const [channelOrderData, setChannelOrderData] = useState(null);
   
   const [appliedCoupon, setAppliedCoupon] = useState('WAVE50'); // default to 50% launch discount!
   const [isAdmin, setIsAdmin] = useState(false);
@@ -105,6 +107,7 @@ export default function App() {
       `Product: *${product.name}*\n` +
       `Category: ${product.categoryLabel}\n` +
       `Size: *${size}*\n` +
+      `Fabric: ${product.fabricType || 'Premium Cotton'}\n` +
       `Offer Price (50% OFF): *₹${discounted}* (Regular ₹${product.price})\n\n` +
       `I would like to order this with Hyderabad door delivery!`;
 
@@ -135,7 +138,8 @@ export default function App() {
       !searchTerm ||
       p.name.toLowerCase().includes(query) ||
       p.description.toLowerCase().includes(query) ||
-      p.categoryLabel.toLowerCase().includes(query);
+      p.categoryLabel.toLowerCase().includes(query) ||
+      (p.fabricType && p.fabricType.toLowerCase().includes(query));
     return matchesCategory && matchesSearch;
   });
 
@@ -202,11 +206,11 @@ export default function App() {
               <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2 pb-6 border-b border-zinc-900 mb-8">
                 <div>
                   <h2 className="text-xl sm:text-2xl font-black uppercase tracking-tight text-white flex items-center gap-2">
-                    <span>Streetwear Drop Catalog</span>
+                    <span>Streetwear Drops & Cuts</span>
                     <Sparkles className="w-4 h-4 text-amber-400" />
                   </h2>
                   <p className="text-xs text-zinc-500 mt-0.5">
-                    Showing {filteredProducts.length} exclusive pieces with heavy GSM & oversized drape
+                    Showing {filteredProducts.length} exclusive drops • 240+ GSM heavyweight cotton & 90s rigid denim
                   </p>
                 </div>
 
@@ -216,7 +220,7 @@ export default function App() {
                     className="text-xs text-amber-400 hover:text-amber-300 flex items-center gap-1 font-mono"
                   >
                     <Ruler className="w-3.5 h-3.5" />
-                    <span>Size & Fit Guide</span>
+                    <span>Exact Size Chart</span>
                   </button>
 
                   {searchTerm && (
@@ -261,6 +265,7 @@ export default function App() {
                       onQuickWhatsApp={handleQuickWhatsApp}
                       onOpenQuickView={(p) => setQuickViewProduct(p)}
                       onOpenSizeGuide={handleOpenSizeGuide}
+                      onOpenChannelOrder={(data) => setChannelOrderData(data)}
                     />
                   ))}
                 </div>
@@ -305,8 +310,15 @@ export default function App() {
         isOpen={!!quickViewProduct}
         onClose={() => setQuickViewProduct(null)}
         onAddToCart={handleAddToCart}
-        onQuickWhatsApp={handleQuickWhatsApp}
         onOpenSizeGuide={handleOpenSizeGuide}
+      />
+
+      {/* Multi-Channel Fast Order Modal */}
+      <ChannelOrderModal
+        isOpen={!!channelOrderData}
+        onClose={() => setChannelOrderData(null)}
+        orderDetails={channelOrderData}
+        onSuccess={() => setCart([])}
       />
 
       {/* Size Guide Modal */}

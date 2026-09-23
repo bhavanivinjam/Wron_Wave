@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { ShoppingBag, MessageCircle, Check, Eye, Ruler, Flame } from 'lucide-react';
+import InstagramIcon from './InstagramIcon';
+import TelegramIcon from './TelegramIcon';
 import { BRAND_INFO } from '../data/mockProducts';
 
 export default function ProductCard({ 
@@ -7,7 +9,8 @@ export default function ProductCard({
   onAddToCart, 
   onQuickWhatsApp, 
   onOpenQuickView, 
-  onOpenSizeGuide 
+  onOpenSizeGuide,
+  onOpenChannelOrder 
 }) {
   const [selectedSize, setSelectedSize] = useState(product.sizes?.[0] || 'M');
   const [addedAnimation, setAddedAnimation] = useState(false);
@@ -27,6 +30,26 @@ export default function ProductCard({
 
   const discountedPrice = Math.round(product.price * 0.5);
 
+  const triggerChannelOrder = () => {
+    if (onOpenChannelOrder) {
+      onOpenChannelOrder({
+        items: [{
+          name: product.name,
+          size: selectedSize,
+          quantity: 1,
+          price: discountedPrice,
+          fabricType: product.fabricType
+        }],
+        subtotal: product.price,
+        discount: product.price - discountedPrice,
+        total: discountedPrice,
+        coupon: 'WAVE50'
+      });
+    } else {
+      onQuickWhatsApp(product, selectedSize);
+    }
+  };
+
   return (
     <div 
       className="group bg-zinc-900/60 hover:bg-zinc-900 border border-zinc-800 hover:border-zinc-700 rounded-2xl overflow-hidden flex flex-col transition-all duration-300 hover:shadow-2xl hover:shadow-black/70"
@@ -35,7 +58,10 @@ export default function ProductCard({
     >
       
       {/* Product Image Container */}
-      <div className="relative aspect-[3/4] overflow-hidden bg-zinc-950 cursor-pointer" onClick={() => onOpenQuickView && onOpenQuickView(product)}>
+      <div 
+        className="relative aspect-[3/4] overflow-hidden bg-zinc-950 cursor-pointer" 
+        onClick={() => onOpenQuickView && onOpenQuickView(product)}
+      >
         <img
           src={currentImage}
           alt={product.name}
@@ -46,11 +72,11 @@ export default function ProductCard({
         {/* Top Badges */}
         <div className="absolute top-2.5 left-2.5 flex flex-col gap-1.5 z-10">
           {product.tag && (
-            <span className="px-2.5 py-0.5 bg-black/80 backdrop-blur-md border border-zinc-700 text-white text-[10px] font-black uppercase tracking-wider rounded-md">
+            <span className="px-2.5 py-0.5 bg-black/80 backdrop-blur-md border border-zinc-700 text-white text-[10px] font-black uppercase tracking-wider rounded-md shadow">
               {product.tag}
             </span>
           )}
-          <span className="px-2 py-0.5 bg-red-600/90 text-white text-[10px] font-black uppercase tracking-wider rounded-md self-start">
+          <span className="px-2 py-0.5 bg-red-600/90 text-white text-[10px] font-black uppercase tracking-wider rounded-md self-start shadow">
             50% OFF CODE
           </span>
         </div>
@@ -58,7 +84,7 @@ export default function ProductCard({
         {/* Stock Urgency Tag */}
         {product.stockCount && product.stockCount <= 5 && (
           <div className="absolute top-2.5 right-2.5 z-10">
-            <span className="px-2 py-0.5 bg-amber-950/90 border border-amber-500/40 text-amber-300 text-[10px] font-mono font-bold rounded-md flex items-center gap-1">
+            <span className="px-2 py-0.5 bg-amber-950/90 border border-amber-500/40 text-amber-300 text-[10px] font-mono font-bold rounded-md flex items-center gap-1 shadow">
               <Flame className="w-3 h-3 text-amber-400" /> Only {product.stockCount} left
             </span>
           </div>
@@ -71,19 +97,19 @@ export default function ProductCard({
             e.stopPropagation();
             onOpenQuickView && onOpenQuickView(product);
           }}
-          className="absolute inset-x-4 bottom-11 py-2.5 rounded-xl bg-black/80 backdrop-blur-md border border-zinc-700 text-white text-xs font-bold uppercase tracking-wider opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 hover:bg-black z-20 shadow-xl"
+          className="absolute inset-x-4 bottom-12 py-2.5 rounded-xl bg-black/85 backdrop-blur-md border border-zinc-700 text-white text-xs font-bold uppercase tracking-wider opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 hover:bg-black z-20 shadow-xl"
         >
-          <Eye className="w-3.5 h-3.5" />
-          <span>Quick View / Multi-Angle</span>
+          <Eye className="w-3.5 h-3.5 text-amber-400" />
+          <span>View Fabric Specs & Angles</span>
         </button>
 
         {/* Category & GSM Badge Footer */}
         <div className="absolute bottom-2 left-2 right-2 z-10 flex items-center justify-between pointer-events-none">
-          <span className="text-[10px] text-zinc-300 bg-black/80 backdrop-blur-md px-2 py-0.5 rounded uppercase tracking-wider font-mono truncate max-w-[65%]">
+          <span className="text-[10px] text-zinc-300 bg-black/80 backdrop-blur-md px-2 py-0.5 rounded uppercase tracking-wider font-mono truncate max-w-[65%] border border-zinc-800">
             {product.categoryLabel}
           </span>
           {product.gsm && (
-            <span className="text-[9px] text-amber-300 bg-zinc-950/90 backdrop-blur-md border border-zinc-800 px-1.5 py-0.5 rounded font-mono">
+            <span className="text-[9px] text-amber-300 bg-zinc-950/90 backdrop-blur-md border border-zinc-800 px-1.5 py-0.5 rounded font-mono font-bold">
               {product.gsm}
             </span>
           )}
@@ -102,21 +128,28 @@ export default function ProductCard({
             {product.name}
           </h3>
 
+          {/* Fabric Type Highlight */}
+          {product.fabricType && (
+            <p className="text-[11px] text-zinc-400 font-mono mt-0.5 truncate">
+              🧵 {product.fabricType}
+            </p>
+          )}
+
           {/* Description */}
-          <p className="text-xs text-zinc-400 mt-1 line-clamp-2 leading-relaxed">
+          <p className="text-xs text-zinc-500 mt-1 line-clamp-2 leading-relaxed">
             {product.description}
           </p>
 
           {/* Sizing Chips & Size Guide Link */}
           <div className="mt-3">
             <div className="flex items-center justify-between mb-1.5 text-[10px] font-semibold">
-              <span className="uppercase tracking-wider text-zinc-500">
-                Select Size:
+              <span className="uppercase tracking-wider text-zinc-400 font-mono">
+                Size:
               </span>
               <button
                 type="button"
                 onClick={() => onOpenSizeGuide && onOpenSizeGuide(product.category)}
-                className="text-amber-400 hover:underline flex items-center gap-1"
+                className="text-amber-400 hover:underline flex items-center gap-1 font-mono"
               >
                 <Ruler className="w-3 h-3" />
                 <span>Size Chart</span>
@@ -143,26 +176,21 @@ export default function ProductCard({
         </div>
 
         {/* Pricing & CTA */}
-        <div className="pt-3 border-t border-zinc-800 space-y-3">
+        <div className="pt-3 border-t border-zinc-800 space-y-2.5">
           
           {/* Price breakdown */}
           <div className="flex items-baseline justify-between">
             <div>
               <span className="text-lg sm:text-xl font-black text-white font-mono">
+                ₹{discountedPrice}
+              </span>
+              <span className="text-xs text-zinc-500 line-through ml-2 font-mono">
                 ₹{product.price}
               </span>
-              {product.originalPrice && (
-                <span className="text-xs text-zinc-500 line-through ml-2 font-mono">
-                  ₹{product.originalPrice}
-                </span>
-              )}
             </div>
             <div className="text-right">
-              <span className="text-[10px] text-amber-400 font-semibold block uppercase font-mono">
-                With WAVE50 Code:
-              </span>
-              <span className="text-xs font-black text-amber-300 font-mono">
-                ₹{discountedPrice}
+              <span className="text-[9px] text-amber-400 font-bold block uppercase font-mono">
+                50% OFF (WAVE50)
               </span>
             </div>
           </div>
@@ -172,6 +200,7 @@ export default function ProductCard({
             
             {/* Add to Bag */}
             <button
+              type="button"
               onClick={handleAdd}
               className={`py-2.5 px-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 ${
                 addedAnimation
@@ -192,14 +221,15 @@ export default function ProductCard({
               )}
             </button>
 
-            {/* Direct WhatsApp Order */}
+            {/* Direct Channel Order Button */}
             <button
-              onClick={() => onQuickWhatsApp(product, selectedSize)}
-              className="py-2.5 px-2 rounded-xl text-xs font-bold bg-zinc-800/90 hover:bg-emerald-950/60 hover:text-emerald-300 hover:border-emerald-700/60 border border-zinc-700 text-zinc-200 transition-all flex items-center justify-center gap-1.5 active:scale-95"
-              title="Quick Order this item on WhatsApp"
+              type="button"
+              onClick={triggerChannelOrder}
+              className="py-2.5 px-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white transition-all flex items-center justify-center gap-1.5 active:scale-95 shadow-md shadow-emerald-950/60"
+              title="Buy directly via WhatsApp / Instagram / Telegram"
             >
-              <MessageCircle className="w-3.5 h-3.5 text-emerald-400" />
-              <span>WhatsApp</span>
+              <MessageCircle className="w-3.5 h-3.5" />
+              <span>Buy Now</span>
             </button>
 
           </div>
