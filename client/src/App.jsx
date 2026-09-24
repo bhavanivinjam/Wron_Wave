@@ -120,6 +120,16 @@ export default function App() {
     setIsSizeGuideOpen(true);
   };
 
+  // Direct E-Commerce Buy Now: adds item to cart and immediately opens checkout
+  const handleBuyNow = (product, size) => {
+    setCart((prev) => {
+      const existing = prev.find((item) => item.id === product.id && item.size === size);
+      if (existing) return prev;
+      return [...prev, { ...product, size, quantity: 1 }];
+    });
+    setIsCheckoutOpen(true);
+  };
+
   const handleOrderSuccess = (newOrder) => {
     try {
       const existingOrders = JSON.parse(localStorage.getItem('wron_wave_orders') || '[]');
@@ -262,10 +272,9 @@ export default function App() {
                       key={product.id}
                       product={product}
                       onAddToCart={handleAddToCart}
-                      onQuickWhatsApp={handleQuickWhatsApp}
+                      onBuyNow={handleBuyNow}
                       onOpenQuickView={(p) => setQuickViewProduct(p)}
                       onOpenSizeGuide={handleOpenSizeGuide}
-                      onOpenChannelOrder={(data) => setChannelOrderData(data)}
                     />
                   ))}
                 </div>
@@ -310,6 +319,7 @@ export default function App() {
         isOpen={!!quickViewProduct}
         onClose={() => setQuickViewProduct(null)}
         onAddToCart={handleAddToCart}
+        onBuyNow={handleBuyNow}
         onOpenSizeGuide={handleOpenSizeGuide}
       />
 

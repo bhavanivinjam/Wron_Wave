@@ -1,13 +1,26 @@
 import React, { useState, useEffect } from 'react';
-import { Package, ShoppingBag, PlusCircle, RefreshCw, User, Phone, MapPin, CheckCircle, Clock, Download, FileSpreadsheet, MessageCircle } from 'lucide-react';
+import { 
+  Package, ShoppingBag, PlusCircle, RefreshCw, User, Phone, 
+  MapPin, CheckCircle, Clock, Download, FileSpreadsheet, 
+  MessageCircle, Truck, Map, ShieldCheck, Trash2, Plus, Check, AlertCircle, Save
+} from 'lucide-react';
 import { getAllOrdersFromDatabase, exportOrdersToCSV } from '../services/cloudDb';
 import { BRAND_INFO } from '../data/mockProducts';
+import { getDeliveryConfig, saveDeliveryConfig } from '../data/deliveryZones';
 
 export default function AdminPortal({ onBackToStore, onProductAdded }) {
   const [orders, setOrders] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('orders'); // 'orders' or 'new-product'
+  const [activeTab, setActiveTab] = useState('orders'); // 'orders', 'delivery-zones', 'new-product'
 
+  // Delivery Configuration State
+  const [deliveryConfig, setDeliveryConfig] = useState(() => getDeliveryConfig());
+  const [newCityName, setNewCityName] = useState('');
+  const [newCityDays, setNewCityDays] = useState('1-2 Days');
+  const [newPincode, setNewPincode] = useState('');
+  const [deliverySaveMsg, setDeliverySaveMsg] = useState('');
+
+  // New Product Form State
   const [newProduct, setNewProduct] = useState({
     name: '',
     category: 'printed-tees',
@@ -54,21 +67,22 @@ export default function AdminPortal({ onBackToStore, onProductAdded }) {
       // Default sample if empty
       if (!combined.length) {
         combined.push({
-          id: 'ORD-1001',
+          id: 'WW-ORD-1001',
           customer: {
             name: 'Rahul Varma',
             phone: '+91 98480 22334',
-            address: 'Plot 55, Road No 36, Jubilee Hills',
+            address: 'Flat 402, Signature Towers, Road No 36, Jubilee Hills, Hyderabad, Telangana - 500033',
             city: 'Hyderabad',
+            state: 'Telangana',
             pincode: '500033'
           },
           items: [
-            { id: 'ww-pt-01', name: "WRON_WAVE GT3 'Track Bred' Heavy Tee", size: 'L', quantity: 1, price: 899 }
+            { id: 'ww-pt-01', name: "WRON_WAVE GT3 'Track Bred' Heavy Tee", size: 'L', quantity: 1, price: 899, fabricType: '240 GSM Heavy Cotton' }
           ],
           subtotal: 1799,
           discount: 900,
           total: 899,
-          paymentMethod: 'UPI / QR on Delivery',
+          paymentMethod: 'Cash on Delivery (COD)',
           status: 'Confirmed',
           createdAt: new Date().toISOString()
         });
@@ -84,6 +98,82 @@ export default function AdminPortal({ onBackToStore, onProductAdded }) {
     fetchOrders();
   }, []);
 
+  // Delivery Configuration Actions
+  const handleToggleAllIndia = () => {
+    const updated = { ...deliveryConfig, allIndiaDelivery: !deliveryConfig.allIndiaDelivery };
+    setDeliveryConfig(updated);
+    saveDeliveryConfig(updated);
+    setDeliverySaveMsg('Updated: Delivery coverage settings saved!');
+    setTimeout(() => setDeliverySaveMsg(''), 3000);
+  };
+
+  const handleToggleCity = (cityId) => {
+    const updatedCities = deliveryConfig.cities.map(c => 
+      c.id === cityId ? { ...c, active: !c.active } : c
+    );
+    const updated = { ...deliveryConfig, cities: updatedCities };
+    setDeliveryConfig(updated);
+    saveDeliveryConfig(updated);
+  };
+
+  const handleAddCity = (e) => {
+    e.preventDefault();
+    if (!newCityName.trim()) return;
+    const newCity = {
+      id: `city-${Date.now().toString(36)}`,
+      name: newCityName.trim(),
+      active: true,
+      estimatedDays: newCityDays || '1-2 Days'
+    };
+    const updated = {
+      ...deliveryConfig,
+      cities: [...deliveryConfig.cities, newCity]
+    };
+    setDeliveryConfig(updated);
+    saveDeliveryConfig(updated);
+    setNewCityName('');
+    setDeliverySaveMsg(`Added "${newCity.name}" to deliverable cities!`);
+    setTimeout(() => setDeliverySaveMsg(''), 3000);
+  };
+
+  const handleRemoveCity = (cityId) => {
+    const updatedCities = deliveryConfig.cities.filter(c => c.id !== cityId);
+    const updated = { ...deliveryConfig, cities: updatedCities };
+    setDeliveryConfig(updated);
+    saveDeliveryConfig(updated);
+  };
+
+  const handleAddPincode = (e) => {
+    e.preventDefault();
+    const pin = newPincode.trim();
+    if (pin.length !== 6 || deliveryConfig.customPincodes.includes(pin)) return;
+    const updated = {
+      ...deliveryConfig,
+      customPincodes: [...deliveryConfig.customPincodes, pin]
+    };
+    setDeliveryConfig(updated);
+    saveDeliveryConfig(updated);
+    setNewPincode('');
+    setDeliverySaveMsg(`Pincode ${pin} added!`);
+    setTimeout(() => setDeliverySaveMsg(''), 3000);
+  };
+
+  const handleRemovePincode = (pin) => {
+    const updated = {
+      ...deliveryConfig,
+      customPincodes: deliveryConfig.customPincodes.filter(p => p !== pin)
+    };
+    setDeliveryConfig(updated);
+    saveDeliveryConfig(updated);
+  };
+
+  const handleToggleCOD = () => {
+    const updated = { ...deliveryConfig, cashOnDeliveryEnabled: !deliveryConfig.cashOnDeliveryEnabled };
+    setDeliveryConfig(updated);
+    saveDeliveryConfig(updated);
+  };
+
+  // Product Creation Action
   const handleCreateProduct = async (e) => {
     e.preventDefault();
     setSubmittingProduct(true);
@@ -136,6 +226,7 @@ export default function AdminPortal({ onBackToStore, onProductAdded }) {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      
       {/* Admin Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-zinc-800">
         <div>
@@ -189,15 +280,16 @@ export default function AdminPortal({ onBackToStore, onProductAdded }) {
           <p className="text-2xl sm:text-3xl font-black text-amber-400 mt-1 font-mono">₹{totalRevenue}</p>
         </div>
         <div className="p-5 rounded-2xl bg-zinc-900/60 border border-zinc-800">
-          <p className="text-xs text-zinc-400 uppercase tracking-wider font-mono">Database Status</p>
-          <div className="flex items-center gap-1.5 mt-2">
-            <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
-            <span className="text-xs font-mono font-bold text-emerald-300 uppercase">Cloud & Sheets Active</span>
-          </div>
+          <p className="text-xs text-zinc-400 uppercase tracking-wider font-mono">Deliverable Locations</p>
+          <p className="text-xl sm:text-2xl font-black text-emerald-400 mt-1 font-mono">
+            {deliveryConfig.allIndiaDelivery ? 'All India Active' : `${deliveryConfig.cities.filter(c => c.active).length} Cities Active`}
+          </p>
         </div>
         <div className="p-5 rounded-2xl bg-zinc-900/60 border border-zinc-800">
-          <p className="text-xs text-zinc-400 uppercase tracking-wider font-mono">Delivery Zone</p>
-          <p className="text-sm font-bold text-zinc-200 mt-2 font-mono">Hyderabad Door Delivery</p>
+          <p className="text-xs text-zinc-400 uppercase tracking-wider font-mono">Payment Mode</p>
+          <p className="text-sm font-bold text-zinc-200 mt-2 font-mono">
+            {deliveryConfig.cashOnDeliveryEnabled ? 'Cash on Delivery Active' : 'Online Only'}
+          </p>
         </div>
       </div>
 
@@ -214,6 +306,16 @@ export default function AdminPortal({ onBackToStore, onProductAdded }) {
           Customer Orders ({orders.length})
         </button>
         <button
+          onClick={() => setActiveTab('delivery-zones')}
+          className={`pb-3 text-xs sm:text-sm font-bold uppercase tracking-wider border-b-2 transition ${
+            activeTab === 'delivery-zones'
+              ? 'border-white text-white'
+              : 'border-transparent text-zinc-500 hover:text-zinc-300'
+          }`}
+        >
+          Deliverable Locations & Pincodes
+        </button>
+        <button
           onClick={() => setActiveTab('new-product')}
           className={`pb-3 text-xs sm:text-sm font-bold uppercase tracking-wider border-b-2 transition ${
             activeTab === 'new-product'
@@ -225,123 +327,116 @@ export default function AdminPortal({ onBackToStore, onProductAdded }) {
         </button>
       </div>
 
-      {/* Tab 1: Orders List */}
+      {/* ================= TAB 1: CUSTOMER ORDERS ================= */}
       {activeTab === 'orders' && (
         <div className="space-y-4">
           {orders.length === 0 ? (
             <div className="text-center py-16 bg-zinc-900/30 rounded-2xl border border-zinc-800 text-zinc-500">
               <Package className="w-12 h-12 mx-auto stroke-1 text-zinc-600 mb-2" />
               <p className="text-base font-bold text-zinc-300">No orders placed yet</p>
-              <p className="text-xs mt-1">Orders placed on your website or via WhatsApp will appear here</p>
+              <p className="text-xs mt-1">Incoming customer orders will appear here automatically</p>
             </div>
           ) : (
             <div className="space-y-4">
               {orders.map((order) => (
                 <div
                   key={order.id}
-                  className="bg-zinc-900/80 border border-zinc-800 rounded-2xl p-5 sm:p-6 space-y-4 shadow-lg hover:border-zinc-700 transition"
+                  className="bg-zinc-900/60 border border-zinc-800 hover:border-zinc-700 rounded-2xl p-5 space-y-4 transition"
                 >
-                  {/* Top Bar of Order */}
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 border-b border-zinc-800">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-zinc-800/80">
                     <div className="flex items-center gap-3">
-                      <span className="font-mono font-black text-amber-400 text-base">
+                      <span className="text-sm font-black font-mono text-white">
                         {order.id}
                       </span>
-                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase bg-emerald-950 text-emerald-400 border border-emerald-800">
+                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase bg-emerald-950 border border-emerald-800 text-emerald-400 font-mono">
                         {order.status || 'Confirmed'}
                       </span>
-                      {order.coupon && (
-                        <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-zinc-800 text-zinc-300">
-                          Code: {order.coupon}
-                        </span>
-                      )}
+                      <span className="text-xs text-zinc-500 font-mono">
+                        {new Date(order.createdAt).toLocaleString('en-IN')}
+                      </span>
                     </div>
 
-                    <div className="text-xs text-zinc-400 flex items-center gap-3 font-mono">
-                      <span>{new Date(order.createdAt).toLocaleString('en-IN')}</span>
-                      
-                      {/* 1-Click WhatsApp Customer Button */}
+                    <div className="flex items-center gap-2">
+                      {/* WhatsApp Quick Link to Customer */}
                       {order.customer?.phone && (
                         <a
-                          href={`https://wa.me/${order.customer.phone.replace(/\D/g, '')}?text=${encodeURIComponent(`Hi ${order.customer.name}! This is WRON_WAVE CLOTHING confirming your order ${order.id}.`)}`}
+                          href={`https://wa.me/${order.customer.phone.replace(/\D/g, '')}?text=${encodeURIComponent(
+                            `Hello ${order.customer.name}, this is WRON_WAVE CLOTHING confirming your order ${order.id} for ₹${order.total}. Our delivery rider will deliver your drop soon!`
+                          )}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="px-3 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-bold font-sans flex items-center gap-1.5 transition"
-                          title="Message customer on WhatsApp"
+                          className="px-3 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 transition"
                         >
                           <MessageCircle className="w-3.5 h-3.5" />
-                          <span>Chat with Customer</span>
+                          <span>WhatsApp Customer</span>
                         </a>
                       )}
                     </div>
                   </div>
 
-                  {/* Customer Info & Items Grid */}
-                  <div className="grid grid-cols-1 md:grid-cols-12 gap-6 text-xs">
-                    
-                    {/* Customer Info */}
-                    <div className="md:col-span-4 space-y-2 bg-zinc-950/70 p-4 rounded-xl border border-zinc-850">
-                      <p className="text-[10px] uppercase font-mono font-bold text-zinc-400">
-                        Customer & Delivery Details
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+                    {/* Customer & Address */}
+                    <div className="space-y-1.5">
+                      <p className="text-[11px] uppercase font-mono tracking-wider text-zinc-400 font-bold">
+                        Customer & Delivery Address
                       </p>
-                      <p className="font-bold text-white text-sm">
-                        {order.customer?.name || 'Walk-in Customer'}
+                      <p className="font-bold text-white flex items-center gap-1.5">
+                        <User className="w-3.5 h-3.5 text-zinc-400" />
+                        <span>{order.customer?.name || 'Customer'}</span>
                       </p>
                       <p className="text-zinc-300 font-mono flex items-center gap-1.5">
-                        <Phone className="w-3.5 h-3.5 text-zinc-500" />
-                        {order.customer?.phone || 'No Phone'}
+                        <Phone className="w-3.5 h-3.5 text-zinc-400" />
+                        <span>{order.customer?.phone || 'No phone'}</span>
                       </p>
-                      <p className="text-zinc-400 flex items-start gap-1.5 leading-relaxed">
-                        <MapPin className="w-3.5 h-3.5 text-zinc-500 flex-shrink-0 mt-0.5" />
-                        <span>{order.customer?.address || 'Hyderabad Delivery'}</span>
+                      <p className="text-zinc-400 flex items-start gap-1.5 leading-relaxed pt-1">
+                        <MapPin className="w-3.5 h-3.5 text-zinc-400 shrink-0 mt-0.5" />
+                        <span>{order.customer?.address || 'Hyderabad'}</span>
                       </p>
-                      <div className="pt-2 border-t border-zinc-850 text-zinc-400">
-                        Payment: <strong className="text-white">{order.paymentMethod || 'COD'}</strong>
-                      </div>
                     </div>
 
-                    {/* Items Ordered */}
-                    <div className="md:col-span-8 space-y-2">
-                      <p className="text-[10px] uppercase font-mono font-bold text-zinc-400">
-                        Drops Ordered:
+                    {/* Ordered Items */}
+                    <div className="space-y-1.5">
+                      <p className="text-[11px] uppercase font-mono tracking-wider text-zinc-400 font-bold">
+                        Items Ordered ({(order.items || []).length})
                       </p>
-                      <div className="space-y-2">
-                        {order.items?.map((item, idx) => (
-                          <div
-                            key={idx}
-                            className="flex items-center justify-between p-3 rounded-xl bg-zinc-950/50 border border-zinc-850"
-                          >
-                            <div>
-                              <span className="font-bold text-white block text-xs">
-                                {item.name}
-                              </span>
-                              <span className="text-[11px] text-zinc-400 font-mono">
-                                Size: <strong className="text-amber-400">{item.size}</strong> • Qty: {item.quantity}
-                              </span>
-                            </div>
-                            <span className="font-mono font-bold text-white">
-                              ₹{item.price * item.quantity}
+                      <div className="space-y-1 max-h-28 overflow-y-auto pr-1">
+                        {(order.items || []).map((it, idx) => (
+                          <div key={idx} className="flex justify-between text-zinc-300 py-0.5">
+                            <span className="truncate pr-2">
+                              • {it.name} <strong className="text-white font-mono">({it.size})</strong> x{it.quantity}
                             </span>
+                            <span className="font-mono text-zinc-400 shrink-0">₹{it.price * it.quantity}</span>
                           </div>
                         ))}
                       </div>
-
-                      {/* Financials Strip */}
-                      <div className="flex items-center justify-between pt-2 border-t border-zinc-850 font-mono">
-                        <span className="text-zinc-400">Total Payable:</span>
-                        <div className="text-right">
-                          {order.discount > 0 && (
-                            <span className="text-[11px] text-emerald-400 block">
-                              50% Discount Applied (-₹{order.discount})
-                            </span>
-                          )}
-                          <span className="text-base font-black text-amber-400">
-                            ₹{order.total}
-                          </span>
-                        </div>
-                      </div>
                     </div>
 
+                    {/* Payment & Totals */}
+                    <div className="space-y-1.5 md:border-l md:border-zinc-800 md:pl-4">
+                      <p className="text-[11px] uppercase font-mono tracking-wider text-zinc-400 font-bold">
+                        Payment & Total
+                      </p>
+                      <div className="flex justify-between text-zinc-400">
+                        <span>Payment Mode:</span>
+                        <span className="font-bold text-emerald-400 uppercase font-mono">
+                          {order.paymentMethod || 'Cash on Delivery'}
+                        </span>
+                      </div>
+                      <div className="flex justify-between text-zinc-400">
+                        <span>Items Subtotal:</span>
+                        <span className="font-mono text-zinc-300">₹{order.subtotal || order.total}</span>
+                      </div>
+                      {order.discount > 0 && (
+                        <div className="flex justify-between text-amber-400">
+                          <span>Discount (WAVE50):</span>
+                          <span className="font-mono font-bold">-₹{order.discount}</span>
+                        </div>
+                      )}
+                      <div className="flex justify-between text-base font-black text-white pt-1 border-t border-zinc-800">
+                        <span>Total Due:</span>
+                        <span className="font-mono text-amber-400">₹{order.total}</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -350,31 +445,222 @@ export default function AdminPortal({ onBackToStore, onProductAdded }) {
         </div>
       )}
 
-      {/* Tab 2: Add New Product Form */}
+      {/* ================= TAB 2: DELIVERABLE LOCATIONS MANAGER ================= */}
+      {activeTab === 'delivery-zones' && (
+        <div className="space-y-6">
+          
+          {deliverySaveMsg && (
+            <div className="p-3.5 bg-emerald-950/80 border border-emerald-700/80 rounded-xl text-xs text-emerald-200 flex items-center gap-2">
+              <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+              <span>{deliverySaveMsg}</span>
+            </div>
+          )}
+
+          {/* Global All India Delivery Switch */}
+          <div className="p-5 bg-zinc-900/60 border border-zinc-800 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                <Truck className="w-4 h-4 text-amber-400" />
+                <span>All-India Delivery Toggle</span>
+              </h3>
+              <p className="text-xs text-zinc-400 mt-1 leading-relaxed">
+                When enabled, customers anywhere across India can order. When disabled, only addresses in your selected cities/pincodes below can order.
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleToggleAllIndia}
+              className={`px-5 py-2.5 rounded-xl font-bold uppercase text-xs tracking-wider transition ${
+                deliveryConfig.allIndiaDelivery
+                  ? 'bg-emerald-600 hover:bg-emerald-500 text-white'
+                  : 'bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border border-zinc-700'
+              }`}
+            >
+              {deliveryConfig.allIndiaDelivery ? '✓ All-India Enabled' : 'Restricted to Selected Locations'}
+            </button>
+          </div>
+
+          {/* Deliverable Cities Control */}
+          <div className="p-5 bg-zinc-900/60 border border-zinc-800 rounded-2xl space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-zinc-800">
+              <div>
+                <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                  <Map className="w-4 h-4 text-amber-400" />
+                  <span>Deliverable Cities ({deliveryConfig.cities.length})</span>
+                </h3>
+                <p className="text-xs text-zinc-400 mt-0.5">
+                  Customers entering these cities will be permitted to place orders.
+                </p>
+              </div>
+
+              {/* Add City Form */}
+              <form onSubmit={handleAddCity} className="flex gap-2">
+                <input
+                  type="text"
+                  placeholder="City Name (e.g. Bangalore)"
+                  value={newCityName}
+                  onChange={(e) => setNewCityName(e.target.value)}
+                  className="bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-1.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-amber-400"
+                />
+                <button
+                  type="submit"
+                  className="px-3 py-1.5 bg-white text-black font-bold uppercase text-xs rounded-xl hover:bg-zinc-200 transition"
+                >
+                  Add City
+                </button>
+              </form>
+            </div>
+
+            {/* Cities Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+              {deliveryConfig.cities.map((city) => (
+                <div
+                  key={city.id}
+                  className={`p-3.5 rounded-xl border flex items-center justify-between transition ${
+                    city.active 
+                      ? 'bg-zinc-950 border-emerald-800/80 text-white' 
+                      : 'bg-zinc-900/30 border-zinc-800 text-zinc-500'
+                  }`}
+                >
+                  <div>
+                    <p className="text-xs font-bold uppercase tracking-tight">{city.name}</p>
+                    <p className="text-[10px] text-zinc-400 font-mono mt-0.5">{city.estimatedDays}</p>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => handleToggleCity(city.id)}
+                      className={`text-[10px] font-mono font-bold uppercase px-2 py-1 rounded-md border transition ${
+                        city.active
+                          ? 'bg-emerald-950 border-emerald-700 text-emerald-400'
+                          : 'bg-zinc-800 border-zinc-700 text-zinc-400'
+                      }`}
+                    >
+                      {city.active ? 'Active' : 'Disabled'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveCity(city.id)}
+                      className="text-zinc-500 hover:text-red-400 p-1"
+                      title="Remove city"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Deliverable Pincodes Control */}
+          <div className="p-5 bg-zinc-900/60 border border-zinc-800 rounded-2xl space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-zinc-800">
+              <div>
+                <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                  <MapPin className="w-4 h-4 text-amber-400" />
+                  <span>Covered Pincodes ({deliveryConfig.customPincodes.length})</span>
+                </h3>
+                <p className="text-xs text-zinc-400 mt-0.5">
+                  All Hyderabad 500xxx prefixes and custom added pincodes are validated here.
+                </p>
+              </div>
+
+              {/* Add Pincode Form */}
+              <form onSubmit={handleAddPincode} className="flex gap-2">
+                <input
+                  type="text"
+                  maxLength={6}
+                  placeholder="6-digit Pincode"
+                  value={newPincode}
+                  onChange={(e) => setNewPincode(e.target.value.replace(/\D/g, ''))}
+                  className="w-32 bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-1.5 text-xs text-white placeholder-zinc-500 font-mono focus:outline-none focus:border-amber-400"
+                />
+                <button
+                  type="submit"
+                  className="px-3 py-1.5 bg-white text-black font-bold uppercase text-xs rounded-xl hover:bg-zinc-200 transition"
+                >
+                  Add Pin
+                </button>
+              </form>
+            </div>
+
+            {/* Pincode Chips */}
+            <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto">
+              <span className="px-2.5 py-1 bg-amber-950/60 border border-amber-700/80 text-amber-300 text-xs font-mono rounded-lg">
+                500xxx (All Hyderabad Ranges)
+              </span>
+              {deliveryConfig.customPincodes.map((pin) => (
+                <span
+                  key={pin}
+                  className="px-2.5 py-1 bg-zinc-950 border border-zinc-800 text-zinc-200 text-xs font-mono rounded-lg flex items-center gap-1.5"
+                >
+                  <span>{pin}</span>
+                  <button
+                    type="button"
+                    onClick={() => handleRemovePincode(pin)}
+                    className="text-zinc-500 hover:text-red-400"
+                  >
+                    ×
+                  </button>
+                </span>
+              ))}
+            </div>
+          </div>
+
+          {/* Cash on Delivery (COD) Control */}
+          <div className="p-5 bg-zinc-900/60 border border-zinc-800 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                <span>Cash on Delivery (COD) Availability</span>
+              </h3>
+              <p className="text-xs text-zinc-400 mt-1">
+                Allows customers to pay in cash or via UPI at doorstep when the package is delivered.
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleToggleCOD}
+              className={`px-5 py-2.5 rounded-xl font-bold uppercase text-xs tracking-wider transition ${
+                deliveryConfig.cashOnDeliveryEnabled
+                  ? 'bg-emerald-600 hover:bg-emerald-500 text-white'
+                  : 'bg-zinc-800 hover:bg-zinc-700 text-zinc-300'
+              }`}
+            >
+              {deliveryConfig.cashOnDeliveryEnabled ? '✓ COD Active' : 'COD Disabled'}
+            </button>
+          </div>
+
+        </div>
+      )}
+
+      {/* ================= TAB 3: ADD NEW PRODUCT ================= */}
       {activeTab === 'new-product' && (
-        <div className="max-w-2xl bg-zinc-900/80 border border-zinc-800 rounded-3xl p-6 sm:p-8 shadow-2xl">
-          <h2 className="text-lg font-black uppercase tracking-tight text-white mb-4">
-            Upload New Streetwear Drop
+        <div className="max-w-2xl bg-zinc-900/60 border border-zinc-800 rounded-2xl p-6">
+          <h2 className="text-base font-black uppercase text-white mb-4">
+            Create Exclusive Apparel Drop
           </h2>
 
           {successMsg && (
-            <div className="mb-4 p-3 bg-emerald-950 border border-emerald-800 text-emerald-300 text-xs rounded-xl flex items-center gap-2">
-              <CheckCircle className="w-4 h-4 text-emerald-400" />
-              <span>{successMsg}</span>
+            <div className="p-3 bg-emerald-950/80 border border-emerald-700 rounded-xl text-emerald-300 text-xs mb-4">
+              {successMsg}
             </div>
           )}
 
           <form onSubmit={handleCreateProduct} className="space-y-4 text-xs">
             <div>
               <label className="block text-zinc-400 uppercase font-mono font-bold mb-1">
-                Drop Name *
+                Product / Drop Name *
               </label>
               <input
                 type="text"
                 required
                 value={newProduct.name}
                 onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })}
-                placeholder="e.g. Acid Skull Heavy Graphic Tee"
+                placeholder="e.g. WRON_WAVE GT3 'Track Bred' Heavy Tee"
                 className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2.5 text-white focus:outline-none focus:border-amber-400"
               />
             </div>
@@ -382,44 +668,43 @@ export default function AdminPortal({ onBackToStore, onProductAdded }) {
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="block text-zinc-400 uppercase font-mono font-bold mb-1">
-                  Collection *
+                  Collection Category
                 </label>
                 <select
                   value={newProduct.category}
                   onChange={(e) => {
-                    const cat = e.target.value;
-                    const labels = {
+                    const map = {
                       'printed-tees': 'Unique Collection of Printed T-Shirts',
                       'overseas-tees': 'Overseas T-Shirts',
-                      'vintage-formal': 'Vintage Classic Formal Shirts',
+                      'vintage-shirts': 'Vintage Classic Formal Shirts',
                       'baggy-jeans': 'Baggy Jeans with 90s Style',
-                      'youth-outfits': 'Trendy Gen-Z Styles Youth Outfits'
+                      'genz-styles': 'Trendy Gen-Z Styles & Youth Outfits'
                     };
                     setNewProduct({
                       ...newProduct,
-                      category: cat,
-                      categoryLabel: labels[cat] || cat
+                      category: e.target.value,
+                      categoryLabel: map[e.target.value] || e.target.value
                     });
                   }}
                   className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2.5 text-white focus:outline-none focus:border-amber-400"
                 >
                   <option value="printed-tees">Printed T-Shirts</option>
                   <option value="overseas-tees">Overseas T-Shirts</option>
-                  <option value="vintage-formal">Vintage Formal Shirts</option>
+                  <option value="vintage-shirts">Vintage Shirts</option>
                   <option value="baggy-jeans">Baggy Jeans (90s)</option>
-                  <option value="youth-outfits">Gen-Z Youth Outfits</option>
+                  <option value="genz-styles">Gen-Z Outfits</option>
                 </select>
               </div>
 
               <div>
                 <label className="block text-zinc-400 uppercase font-mono font-bold mb-1">
-                  Tag / Badge
+                  Tag Badge
                 </label>
                 <input
                   type="text"
                   value={newProduct.tag}
                   onChange={(e) => setNewProduct({ ...newProduct, tag: e.target.value })}
-                  placeholder="e.g. New Drop, Bestseller"
+                  placeholder="e.g. Official Drop, Limited Edition"
                   className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2.5 text-white focus:outline-none focus:border-amber-400"
                 />
               </div>
@@ -428,7 +713,7 @@ export default function AdminPortal({ onBackToStore, onProductAdded }) {
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="block text-zinc-400 uppercase font-mono font-bold mb-1">
-                  Price (INR) *
+                  Drop Price (₹) *
                 </label>
                 <input
                   type="number"
@@ -442,7 +727,7 @@ export default function AdminPortal({ onBackToStore, onProductAdded }) {
 
               <div>
                 <label className="block text-zinc-400 uppercase font-mono font-bold mb-1">
-                  Original Price (before 50% discount)
+                  Original MRP Price (₹)
                 </label>
                 <input
                   type="number"

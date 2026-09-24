@@ -1,16 +1,12 @@
 import React, { useState } from 'react';
-import { ShoppingBag, MessageCircle, Check, Eye, Ruler, Flame } from 'lucide-react';
-import InstagramIcon from './InstagramIcon';
-import TelegramIcon from './TelegramIcon';
-import { BRAND_INFO } from '../data/mockProducts';
+import { ShoppingBag, Check, Eye, Ruler, Flame, Zap, ArrowRight } from 'lucide-react';
 
 export default function ProductCard({ 
   product, 
   onAddToCart, 
-  onQuickWhatsApp, 
+  onBuyNow, 
   onOpenQuickView, 
-  onOpenSizeGuide,
-  onOpenChannelOrder 
+  onOpenSizeGuide 
 }) {
   const [selectedSize, setSelectedSize] = useState(product.sizes?.[0] || 'M');
   const [addedAnimation, setAddedAnimation] = useState(false);
@@ -28,27 +24,15 @@ export default function ProductCard({
     setTimeout(() => setAddedAnimation(false), 1200);
   };
 
-  const discountedPrice = Math.round(product.price * 0.5);
-
-  const triggerChannelOrder = () => {
-    if (onOpenChannelOrder) {
-      onOpenChannelOrder({
-        items: [{
-          name: product.name,
-          size: selectedSize,
-          quantity: 1,
-          price: discountedPrice,
-          fabricType: product.fabricType
-        }],
-        subtotal: product.price,
-        discount: product.price - discountedPrice,
-        total: discountedPrice,
-        coupon: 'WAVE50'
-      });
+  const handleDirectBuy = () => {
+    if (onBuyNow) {
+      onBuyNow(product, selectedSize);
     } else {
-      onQuickWhatsApp(product, selectedSize);
+      onAddToCart(product, selectedSize);
     }
   };
+
+  const discountedPrice = Math.round(product.price * 0.5);
 
   return (
     <div 
@@ -195,7 +179,7 @@ export default function ProductCard({
             </div>
           </div>
 
-          {/* Action buttons */}
+          {/* Standard E-Commerce Action buttons */}
           <div className="grid grid-cols-2 gap-2">
             
             {/* Add to Bag */}
@@ -205,7 +189,7 @@ export default function ProductCard({
               className={`py-2.5 px-3 rounded-xl text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 ${
                 addedAnimation
                   ? 'bg-emerald-600 text-white'
-                  : 'bg-white text-black hover:bg-zinc-200 active:scale-95'
+                  : 'bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 active:scale-95'
               }`}
             >
               {addedAnimation ? (
@@ -221,14 +205,14 @@ export default function ProductCard({
               )}
             </button>
 
-            {/* Direct Channel Order Button */}
+            {/* Direct Buy Now (Cash on Delivery) Button */}
             <button
               type="button"
-              onClick={triggerChannelOrder}
-              className="py-2.5 px-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white transition-all flex items-center justify-center gap-1.5 active:scale-95 shadow-md shadow-emerald-950/60"
-              title="Buy directly via WhatsApp / Instagram / Telegram"
+              onClick={handleDirectBuy}
+              className="py-2.5 px-2 rounded-xl text-xs font-black bg-white hover:bg-zinc-200 text-black transition-all flex items-center justify-center gap-1.5 active:scale-95 shadow-lg"
+              title="Buy now with Cash on Delivery"
             >
-              <MessageCircle className="w-3.5 h-3.5" />
+              <Zap className="w-3.5 h-3.5 fill-black" />
               <span>Buy Now</span>
             </button>
 

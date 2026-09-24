@@ -15,6 +15,7 @@ app.use(express.json());
 
 const PRODUCTS_FILE = path.join(__dirname, 'data', 'products.json');
 const ORDERS_FILE = path.join(__dirname, 'data', 'orders.json');
+const DELIVERY_CONFIG_FILE = path.join(__dirname, 'data', 'delivery-config.json');
 
 // Helper to read JSON
 function readJSON(file) {
@@ -167,6 +168,25 @@ app.post('/api/orders', (req, res) => {
     order: newOrder,
     isFirst10Offer: isFirst10
   });
+});
+
+// GET deliverable locations config
+app.get('/api/delivery-config', (req, res) => {
+  const config = readJSON(DELIVERY_CONFIG_FILE);
+  res.json({
+    success: true,
+    config: Array.isArray(config) && config.length === 0 ? null : config
+  });
+});
+
+// POST update deliverable locations config (Admin)
+app.post('/api/delivery-config', (req, res) => {
+  const newConfig = req.body;
+  if (!newConfig) {
+    return res.status(400).json({ success: false, message: 'Invalid delivery configuration' });
+  }
+  writeJSON(DELIVERY_CONFIG_FILE, newConfig);
+  res.json({ success: true, message: 'Delivery configuration saved successfully' });
 });
 
 // Start Server
