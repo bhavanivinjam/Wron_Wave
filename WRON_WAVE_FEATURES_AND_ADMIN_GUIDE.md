@@ -131,7 +131,8 @@ Once the customer clicks **"Place Order (Cash on Delivery)"**:
 Whenever an order is placed:
 1. **Database Save**: Saved immediately to Local Storage, Supabase Cloud Database (PostgreSQL), and backend server (`/api/orders`).
 2. **Google Sheets Sync**: The order details are formatted and posted to your Google Sheets webhook or exported via the 1-click CSV button.
-3. **Administrator Alert**:
+3. **Administrator Alert (+91 91870 00720)**:
+   * When an order is booked, the system prepares and triggers the official dispatch alert directly to Store Administrator number **`+91 91870 00720`**.
    * The notification is pre-formatted with all order details:
      ```text
      🚨 NEW ORDER RECEIVED - WRON_WAVE STORE
@@ -192,3 +193,4 @@ All your uploaded brand photoshoot drops are live in the catalog:
   👉 **[https://wron-wave.vercel.app](https://wron-wave.vercel.app)**
 * **GitHub Repository**:
   👉 **[https://github.com/bhavanivinjam/Wron_Wave](https://github.com/bhavanivinjam/Wron_Wave)**
+

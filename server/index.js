@@ -162,10 +162,13 @@ app.post('/api/orders', (req, res) => {
   orders.unshift(newOrder);
   writeJSON(ORDERS_FILE, orders);
 
+  console.log(`[ADMIN WHATSAPP DISPATCH] New Order #${newOrder.id} logged! Triggering admin notification to: +91 9187000720`);
+
   res.status(201).json({
     success: true,
     message: 'Order created successfully',
     order: newOrder,
+    adminNotificationTarget: '+91 9187000720',
     isFirst10Offer: isFirst10
   });
 });

@@ -2,10 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { 
   X, CheckCircle, Truck, ShieldCheck, MapPin, 
   Phone, User, Home, Briefcase, AlertCircle, 
-  Check, Printer, ArrowRight, ShoppingBag, Sparkles
+  Check, Printer, ArrowRight, ShoppingBag, Sparkles, MessageCircle
 } from 'lucide-react';
 import { BRAND_INFO } from '../data/mockProducts';
-import { saveOrderToDatabase } from '../services/cloudDb';
+import { saveOrderToDatabase, getAdminWhatsAppUrl, ADMIN_WHATSAPP_NUMBER } from '../services/cloudDb';
 import { checkDeliverability, getDeliveryConfig } from '../data/deliveryZones';
 
 export default function CheckoutModal({
@@ -295,12 +295,33 @@ export default function CheckoutModal({
               </div>
             </div>
 
-            {/* Administrator & Backend Notification Indicator */}
-            <div className="p-3 bg-emerald-950/40 border border-emerald-900/60 rounded-xl text-left flex items-start gap-2.5">
-              <div className="w-2 h-2 rounded-full bg-emerald-400 mt-1 animate-pulse"></div>
-              <p className="text-[11px] text-emerald-300 leading-relaxed">
-                <strong>Backend Order Dispatch Active:</strong> Order details have been synced to the WRON_WAVE Store Database & dispatch team. Our delivery rider will call your phone prior to arrival.
+            {/* Administrator & Backend WhatsApp Notification Trigger */}
+            <div className="p-4 bg-emerald-950/60 border border-emerald-800 rounded-2xl text-left space-y-2.5">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <div className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></div>
+                  <span className="text-xs font-mono font-bold text-emerald-300 uppercase">
+                    Admin WhatsApp Alert (+91 91870 00720)
+                  </span>
+                </div>
+                <span className="text-[10px] font-mono text-emerald-400 bg-black/40 px-2 py-0.5 rounded border border-emerald-800">
+                  Trigger Ready
+                </span>
+              </div>
+              
+              <p className="text-[11px] text-zinc-300 leading-relaxed">
+                Order details have been synced to the database. Tap below to send the official order notification directly into the Store Administrator's WhatsApp (<span className="text-white font-mono font-bold">+91 91870 00720</span>) for express dispatch!
               </p>
+
+              <a
+                href={getAdminWhatsAppUrl(completedOrder)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full py-2.5 px-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs uppercase tracking-wider rounded-xl flex items-center justify-center gap-2 transition active:scale-98 shadow-lg shadow-emerald-950"
+              >
+                <MessageCircle className="w-4 h-4 fill-white" />
+                <span>Send Order to Admin WhatsApp (+91 91870 00720)</span>
+              </a>
             </div>
 
             {/* Action Buttons */}

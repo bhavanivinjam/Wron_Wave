@@ -28,7 +28,8 @@ export const DEFAULT_DELIVERY_CONFIG = {
   cashOnDeliveryEnabled: true,
   deliveryFee: 0, // Free Delivery by default
   freeDeliveryThreshold: 0,
-  supportPhone: '+91 7675833094'
+  supportPhone: '+91 9187000720',
+  adminWhatsApp: '919187000720'
 };
 
 /**
@@ -127,3 +128,4 @@ export function checkDeliverability({ city = '', pincode = '' }) {
     estimatedDays: 'Not Deliverable'
   };
 }
+
